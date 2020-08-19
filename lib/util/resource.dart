@@ -67,3 +67,4 @@ final String fnBarcode = "barcode";
 final String fnName = "name";
 final String fnPrice = "price";
 final String fnDatetime = "datetime";
+final String fnIsInput = "isInput";

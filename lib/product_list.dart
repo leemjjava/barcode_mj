@@ -1,12 +1,10 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:barcode_mj/util/resource.dart';
 import 'package:barcode_mj/util/util.dart';
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'custom_ui/button.dart';
 import 'custom_ui/layout.dart';
 
@@ -46,6 +44,11 @@ class ProductListState extends State<ProductList> {
   @override
   void dispose() {
     streamSub.cancel();
+    _undNameCon.dispose();
+    _undPrice.dispose();
+    _undBarcode.dispose();
+    _nameCon.dispose();
+    _priceCon.dispose();
     super.dispose();
   }
   void _listenStream(){
@@ -249,7 +252,7 @@ class ProductListState extends State<ProductList> {
     switch(barcode.type){
       case ResultType.Barcode:
         this.barcode = barcode.rawContent;
-        showCreateDocDialog();
+        checkBarcodeCreate();
         break;
       case ResultType.Cancelled:
         this.barcode = "바코드를 인식해주세요.";
@@ -262,16 +265,12 @@ class ProductListState extends State<ProductList> {
     setState(() {});
   }
 
-  void checkBarcodeCreate(String name, String price){
+  void checkBarcodeCreate(){
     firestore.collection(colName).where(fnBarcode, isEqualTo: barcode).get().then((value){
       List<QueryDocumentSnapshot> _documents = value.docs;
 
-      if(_documents.isEmpty) createDoc(name, price);
+      if(_documents.isEmpty) showCreateDocDialog();
       else showAlert(context, '동일한 상품이 존재합니다.');
-
-      for(final item in _documents){
-        print('${item.data()[fnName]}');
-      }
 
     }, onError: (error, stacktrace){
       print("onError: $error");
@@ -331,9 +330,10 @@ class ProductListState extends State<ProductList> {
                   controller: _nameCon,
                 ),
                 TextField(
+                  autofocus: true,
                   decoration: InputDecoration(labelText: '가격'),
                   controller: _priceCon,
-                )
+                ),
               ],
             ),
           ),
@@ -355,7 +355,7 @@ class ProductListState extends State<ProductList> {
                 if(_priceCon.text.isNotEmpty) message = "상품가격을 입력하세요.";
 
                 if(message == null) showReadDocSnackBar(message);
-                else checkBarcodeCreate(_nameCon.text, _priceCon.text);
+                else createDoc(_nameCon.text, _priceCon.text);
 
                 _nameCon.clear();
                 _priceCon.clear();
