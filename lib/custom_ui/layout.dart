@@ -1,0 +1,266 @@
+import 'dart:math';
+
+import 'package:barcode_mj/util/resource.dart';
+import 'package:barcode_mj/util/util.dart';
+import 'package:flutter/material.dart';
+
+import 'button.dart';
+
+// ignore: must_be_immutable
+class TopBar extends StatelessWidget{
+  TopBar({
+    Key key,
+    this.title,
+    this.onTap,
+    this.closeIcon,
+  }):super(key:key);
+
+  String title;
+  Function onTap;
+  Icon closeIcon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 60,
+      width: double.infinity,
+      child: Stack(
+        children: <Widget>[
+          TopTitle(title:title),
+          SizedBox(
+            height: double.infinity,
+            width: 60,
+            child: Material(
+              color: Colors.white,
+              child: InkWell(
+                splashColor: quickGray75,
+                onTap: onTap != null ? onTap: ()=>Navigator.pop(context),
+                child: Container(
+                  margin: EdgeInsets.only(left: 10),
+                  alignment: Alignment.centerLeft,
+                  child: closeIcon == null ? Icon(Icons.close): closeIcon,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ignore: must_be_immutable
+class TopTitle extends StatelessWidget{
+  TopTitle({
+    Key key,
+    this.title,
+  }):super(key:key);
+
+  String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.white,
+      child: SizedBox(
+        height: 60,
+        child: Center(
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class TopSearchBar extends StatelessWidget{
+  TopSearchBar({
+    Key key,
+    @required this.searchTec,
+    this.padding
+  }):super(key:key);
+
+  EdgeInsets padding;
+  final TextEditingController searchTec;
+
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    return Container(
+      padding: padding,
+      height: 58,
+      width: double.infinity,
+      alignment: Alignment.center,
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: TextField(
+              controller: searchTec,
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                hintText: "쾌변 통합 검색",
+                hintStyle: TextStyle(color:Color(0xFFA0A0A0)),
+              ),
+              onSubmitted: (value){
+                search(context);
+              },
+            ),
+          ),
+          InkWellCS(
+            child: Icon(
+              Icons.search,
+              color: Color(0xff014f90),
+              size: 30,
+            ),onTap:()=> search(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  search(BuildContext context){
+    String keyword = searchTec.text;
+    if(keyword == null || keyword.isEmpty){
+      showAlert(context, "검색어를 입력해 주세요.");
+      return;
+    }
+    searchTec.clear();
+    FocusScope.of(context).requestFocus(new FocusNode());
+
+  }
+}
+
+class SliverHeaderDelegateCS extends SliverPersistentHeaderDelegate {
+  SliverHeaderDelegateCS({
+    @required this.minHeight,
+    @required this.maxHeight,
+    @required this.maxChild,
+    @required this.minChild,
+  });
+  final double minHeight, maxHeight;
+  final Widget maxChild, minChild;
+
+  double visibleMainHeight, animationVal, width;
+
+  @override
+  bool shouldRebuild(SliverHeaderDelegateCS oldDelegate) => true;
+  @override
+  double get minExtent => minHeight;
+  @override
+  double get maxExtent => max(maxHeight, minHeight);
+
+  double scrollAnimationValue(double shrinkOffset) {
+    double maxScrollAllowed = maxExtent - minExtent;
+
+    return ((maxScrollAllowed - shrinkOffset) / maxScrollAllowed)
+        .clamp(0, 1)
+        .toDouble();
+  }
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    width = MediaQuery.of(context).size.width;
+    visibleMainHeight = max(maxExtent - shrinkOffset, minExtent);
+    animationVal = scrollAnimationValue(shrinkOffset);
+
+    return Container(
+        height: visibleMainHeight,
+        width: MediaQuery.of(context).size.width,
+        color: Color(0xFFFFFFFF),
+        child: Stack(
+          children: <Widget>[
+            getMinTop(),
+            animationVal != 0 ? getMaxTop() : Container(),
+          ],
+        )
+    );
+  }
+
+  Widget getMaxTop(){
+    return Positioned(
+      bottom: 0.0,
+      child: Opacity(
+        opacity: animationVal,
+        child: SizedBox(
+          height: maxHeight,
+          width: width,
+          child: maxChild,
+        ),
+      ),
+    );
+  }
+
+  Widget getMinTop(){
+    return Opacity(
+      opacity: 1 - animationVal,
+      child: Container(
+          height: visibleMainHeight,
+          width: width,
+          child: minChild
+      ),
+    );
+  }
+}
+
+class GrayTextCS extends StatelessWidget{
+  GrayTextCS({
+    Key key,
+    this.title,
+    this.height
+  }) : super(key:key);
+
+  final String title;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    double radius = height / 2;
+
+    return Container(
+      margin: EdgeInsets.only(right: 5),
+      height: height,
+      padding: EdgeInsets.only(left: radius, right: radius),
+      decoration: BoxDecoration(
+        color: quickGrayEC,
+        borderRadius: BorderRadius.all(
+          Radius.circular(radius),
+        ),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        title,
+        style: TextStyle(
+          color: quickBlack4E,
+          fontSize: 13,
+        ),
+      ),
+    );
+  }
+
+}
+
+class DetailTitle extends StatelessWidget{
+  DetailTitle({
+    Key key,
+    @required this.title,
+  }): super(key:key);
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      title,
+      style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w800
+      ),
+    );
+  }
+
+}

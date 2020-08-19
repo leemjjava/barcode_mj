@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "676529890775",
+    "firebase_url": "https://sale-mart-ea3ea.firebaseio.com",
+    "project_id": "sale-mart-ea3ea",
+    "storage_bucket": "sale-mart-ea3ea.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:676529890775:android:53a1f4ed3dbc0b1a94d792",
+        "android_client_info": {
+          "package_name": "kr.co.mj.barcode_mj"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "676529890775-pqjs1ej0ojp3qthreccc58kolvvkofe9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "kr.co.mj.barcode_mj",
+            "certificate_hash": "3be4cd9de014635636f297d39a17a039cd7bb58c"
+          }
+        },
+        {
+          "client_id": "676529890775-flve6tt2vr5cr1mhcg74sk56omitjcp6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCAgj-UJ7GREwyy8Zydzd2DNccgxBaNJJs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "676529890775-flve6tt2vr5cr1mhcg74sk56omitjcp6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
