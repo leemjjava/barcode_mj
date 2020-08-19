@@ -13,32 +13,40 @@ class TopBar extends StatelessWidget{
     this.title,
     this.onTap,
     this.closeIcon,
+    this.background = Colors.white,
+    this.textColor = Colors.black,
   }):super(key:key);
 
   String title;
   Function onTap;
   Icon closeIcon;
+  Color background, textColor;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: 60,
       width: double.infinity,
+      color: background,
       child: Stack(
         children: <Widget>[
-          TopTitle(title:title),
+          TopTitle(
+            title:title,
+            background: background,
+            textColor: textColor,
+          ),
           SizedBox(
             height: double.infinity,
             width: 60,
             child: Material(
-              color: Colors.white,
+              color: background,
               child: InkWell(
                 splashColor: quickGray75,
                 onTap: onTap != null ? onTap: ()=>Navigator.pop(context),
                 child: Container(
                   margin: EdgeInsets.only(left: 10),
                   alignment: Alignment.centerLeft,
-                  child: closeIcon == null ? Icon(Icons.close): closeIcon,
+                  child: closeIcon == null ? Icon(Icons.close, color: textColor,) : closeIcon,
                 ),
               ),
             ),
@@ -54,14 +62,17 @@ class TopTitle extends StatelessWidget{
   TopTitle({
     Key key,
     this.title,
+    this.background = Colors.white,
+    this.textColor = Colors.black,
   }):super(key:key);
 
   String title;
+  Color background, textColor;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
+      color: background,
       child: SizedBox(
         height: 60,
         child: Center(
@@ -70,6 +81,7 @@ class TopTitle extends StatelessWidget{
             style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w500,
+              color: textColor,
             ),
           ),
         ),

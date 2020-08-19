@@ -59,5 +59,11 @@ const REAL_ESTATE_TYPE_CODE = 51000;
 const REDUCTION_PROVISIONS_CODE = 52000;
 const HOUSE_COUNT_CODE = 53000;
 
-const DISCLAIMER_TEXT = '''쾌변에 게제된 컨텐츠는 일반적인 정보를 제공하기 위한 것이며, 어떤 특정한 사안에 관한 법률적·행정적 자문 또는 해석을 위해 제공되는 것이 아닙니다.\n\n개인 별 사건의 구체적인 사실관계와 정황 등에 따라 법 규정 해석에 대해서는 이견이 있을 수 있으며, 변호사상담 또는 사건의뢰 등 공식적인 법률자문 및 변호사 선임, 위임계약 없이 쾌변에서 취득한 정보만으로 개인회원이 임의적 법적 조치를 취하여 발생할 수 있는 직,간접적인 손해에 대해서 쾌변과 변호사 회원은 어떠한 법적 책임이 없음을 공지 합니다.\n\n
-쾌변은 개인 회원의 법률적 상담 문의 및 예약, 변호사 회원의 상담내용, 변호인 수임 여부등에 대해 일절 관여하지 않으며, 변호사회원이 개인회원에게 제공하는 상담 등의 서비스 내용과 질에 대해 어떠한 법적책임도 부담하지 않습니다.\n\n또한 쾌변은 일반 회원과 변호사 회원간의 상담 및 예약의 중개서비스 또는 통신판매중개 서비스를 제공할 뿐, 통신판매의 당사자가 아닙니다.''';
+// 컬렉션명
+final String colName = "products";
+
+// 필드명
+final String fnBarcode = "barcode";
+final String fnName = "name";
+final String fnPrice = "price";
+final String fnDatetime = "datetime";
