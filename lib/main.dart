@@ -1,4 +1,4 @@
-import 'package:barcode_mj/product_list.dart';
+import 'package:barcode_mj/home.dart';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:barcode_mj/util/util.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -41,7 +41,7 @@ class _MyAppState extends State<MyApp> {
           // Once complete, show your application
           if (snapshot.connectionState == ConnectionState.done) {
             return MaterialApp(
-              home: ProductList(),
+              home: Home(),
             );
           }
 

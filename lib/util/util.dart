@@ -1,4 +1,5 @@
 import 'package:barcode_mj/util/resource.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:progress_dialog/progress_dialog.dart';
@@ -336,4 +337,10 @@ Widget redDot({Widget child, double alignmentY = 1}){
       )
     ],
   );
+}
+
+String timestampToStrDateTime(Timestamp ts) {
+  return DateTime
+      .fromMicrosecondsSinceEpoch(ts.microsecondsSinceEpoch)
+      .toString();
 }

@@ -68,3 +68,8 @@ final String fnName = "name";
 final String fnPrice = "price";
 final String fnDatetime = "datetime";
 final String fnIsInput = "isInput";
+final String fnCount = "count";
+
+final String productListTypeAll = 'LIST_ALL';
+final String productListTypeInput = 'LIST_INPUT';
+final String productListTypeNotInput = 'LIST_NOT_INPUT';

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:barcode_mj/util/resource.dart';
 import 'package:barcode_mj/util/util.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'button.dart';
@@ -271,6 +272,76 @@ class DetailTitle extends StatelessWidget{
       style: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w800
+      ),
+    );
+  }
+
+}
+
+// ignore: must_be_immutable
+class PriceCard extends StatelessWidget{
+
+  PriceCard({
+    Key key,
+    @required this.document,
+    @required this.onTap,
+  }) : super(key:key);
+
+  DocumentSnapshot document;
+  GestureTapCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final itemMap = document.data();
+    Timestamp ts = itemMap[fnDatetime];
+    String dt = timestampToStrDateTime(ts);
+
+    return Card(
+      elevation: 2,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          height: 200,
+          padding: const EdgeInsets.all(8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Container(
+                alignment: Alignment.centerLeft,
+                height: 50,
+                child: Text('${itemMap[fnName]}',
+                  style: TextStyle(
+                    color: Colors.blueGrey,
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              descriptionWidget('값', 15),
+              descriptionWidget('${itemMap[fnPrice]}', 25),
+              descriptionWidget('바코드', 15),
+              descriptionWidget('${itemMap[fnBarcode]}', 25),
+              Text(
+                dt,
+                style:
+                TextStyle(color: Colors.grey[600]),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget descriptionWidget(String content, double size){
+    return Text(
+      content,
+      overflow: TextOverflow.ellipsis,
+      maxLines: 1,
+      style: TextStyle(
+        fontSize: size,
+        color: quickBlack03,
       ),
     );
   }
