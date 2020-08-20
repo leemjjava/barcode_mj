@@ -91,6 +91,67 @@ class TopTitle extends StatelessWidget{
   }
 }
 
+// ignore: must_be_immutable
+class TopRefreshBar extends StatelessWidget{
+  TopRefreshBar({
+    Key key,
+    this.title,
+    this.onTap,
+    this.onRefresh,
+    this.closeIcon,
+    this.background = Colors.white,
+    this.textColor = Colors.black,
+  }):super(key:key);
+
+  String title;
+  Function onTap;
+  GestureTapCallback onRefresh;
+  Icon closeIcon;
+  Color background, textColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 60,
+      width: double.infinity,
+      color: background,
+      child: Stack(
+        children: <Widget>[
+          TopTitle(
+            title:title,
+            background: background,
+            textColor: textColor,
+          ),
+          Container(
+            padding: EdgeInsets.only(left: 10, right: 10),
+            height: double.infinity,
+            width: double.infinity,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+              InkWellCS(
+                  backgroundColor: background,
+                  splashColor: quickGray75,
+                  onTap: onTap != null ? onTap: ()=>Navigator.pop(context),
+                  child: closeIcon == null ? Icon(Icons.close, color: textColor,) : closeIcon,
+                ),
+                InkWellCS(
+                  backgroundColor: background,
+                  child: Icon(
+                    Icons.refresh,
+                    color: textColor,
+                    size: 30,
+                  ),onTap:onRefresh,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class TopSearchBar extends StatelessWidget{
   TopSearchBar({
     Key key,

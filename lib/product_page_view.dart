@@ -19,6 +19,13 @@ class ProductPageViewState extends State<ProductPageView>{
   PageController _pageController;
   int pageIndex = 0;
 
+  final widgetList = [
+    ProductList(type: productListTypeNotInput,),
+    ProductList(type: productListTypeAll,),
+    ProductList(type: productListTypeInput,),
+  ];
+
+
   @override
   void initState() {
     super.initState();
@@ -27,12 +34,13 @@ class ProductPageViewState extends State<ProductPageView>{
     else if(widget.type == productListTypeAll) initialPage = 1;
     else initialPage = 2;
 
-    _pageController = PageController(initialPage: initialPage);
+    _pageController = PageController(initialPage: initialPage + 999);
   }
 
   @override
   Widget build(BuildContext context) {
-    return mainPageView();
+//    return mainPageView();
+    return infinityPageView();
   }
 
   Widget mainPageView(){
@@ -49,6 +57,15 @@ class ProductPageViewState extends State<ProductPageView>{
           pageIndex = index;
         });
       },
+    );
+  }
+
+  Widget infinityPageView(){
+    return PageView.builder(
+        controller: _pageController,
+        itemBuilder: (context, index) {
+          return widgetList[index % widgetList.length];
+        }
     );
   }
 }

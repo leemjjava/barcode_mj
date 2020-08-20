@@ -3,8 +3,10 @@ import 'dart:io';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:barcode_mj/util/util.dart';
 import 'package:barcode_scan/barcode_scan.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'custom_ui/button.dart';
 import 'custom_ui/layout.dart';
 import 'custom_ui/text_field.dart';
@@ -21,14 +23,17 @@ class ProductList extends StatefulWidget{
   ProductListState createState()=>ProductListState();
 }
 
-class ProductListState extends State<ProductList> {
+class ProductListState extends State<ProductList> with AutomaticKeepAliveClientMixin<ProductList>{
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
+  RefreshController refreshController = RefreshController(initialRefresh: false);
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   String barcode, topTitle;
+  Timestamp startTimeStamp;
 
   FirebaseFirestore firestore;
-  Stream<QuerySnapshot> _stream;
   List<QueryDocumentSnapshot> _documents = [];
-  StreamSubscription<QuerySnapshot> streamSub;
 
   double inputHeight = 40, inputFontSize = 15;
 
@@ -40,57 +45,75 @@ class ProductListState extends State<ProductList> {
   @override
   void initState() {
     super.initState();
+
     firestore = FirebaseFirestore.instance;
-
-    if(widget.type == productListTypeInput) setInputStream();
-    else if(widget.type == productListTypeNotInput) setNotInputStream();
-    else setAllStream();
-
-    _listenStream();
+    startTimeStamp = Timestamp.now();
+    startGetList();
   }
 
-  void setAllStream(){
-    topTitle= "전체 상품 현황";
-    _stream = firestore
-        .collection(colName)
-        .orderBy(fnDatetime, descending: true)
-        .snapshots();
-  }
+  void startGetList(){
+    Future<QuerySnapshot> snapshotFuture;
+    if(widget.type == productListTypeInput) snapshotFuture = setInputStream();
+    else if(widget.type == productListTypeNotInput) snapshotFuture = setNotInputStream();
+    else snapshotFuture = setAllStream();
 
-  void setInputStream(){
-    topTitle= "입력 상품 현황";
-    _stream = firestore
-        .collection(colName)
-        .where(fnIsInput, isEqualTo: 'Y')
-        .orderBy(fnDatetime, descending: true)
-        .snapshots();
-  }
+    snapshotFuture.then((snapshot){
+      if(_documents.length == 0) refreshController.refreshCompleted();
+      else refreshController.loadComplete();
 
-  void setNotInputStream(){
-    topTitle= "미입력 상품 현황";
-    _stream = firestore
-        .collection(colName)
-        .where(fnIsInput, isEqualTo: 'N')
-        .orderBy(fnDatetime, descending: true)
-        .snapshots();
-  }
+      final documents = snapshot.docs;
+      if(documents.isEmpty) return;
 
-  void _listenStream(){
-    streamSub = _stream.listen((snapshot) {
-      _documents = snapshot.docs;
+      final lastDocuments = documents[snapshot.docs.length -1];
+      startTimeStamp = lastDocuments.data()[fnDatetime];
+
+      _documents.addAll(snapshot.docs);
+
       setState(() {});
-
     },onError:(error, stacktrace){
-      print("onError: $error");
+      print("$error");
       print(stacktrace.toString());
-      showAlert(context,stacktrace.toString());
+
+      showAlert(context,'$error : ${stacktrace.toString()}');
     });
   }
 
 
+
+  Future<QuerySnapshot> setAllStream() {
+    topTitle= "전체 상품 현황";
+    return firestore
+        .collection(colName)
+        .where(fnDatetime, isLessThan: startTimeStamp)
+        .orderBy(fnDatetime, descending: true)
+        .limit(10)
+        .get();
+  }
+
+  Future<QuerySnapshot> setInputStream() async{
+    topTitle= "입력 상품 현황";
+    return await firestore
+        .collection(colName)
+        .where(fnIsInput, isEqualTo: 'Y')
+        .where(fnDatetime, isLessThan: startTimeStamp)
+        .orderBy(fnDatetime, descending: true)
+        .limit(10)
+        .get();
+  }
+
+  Future<QuerySnapshot> setNotInputStream() async{
+    topTitle= "미입력 상품 현황";
+    return await firestore
+        .collection(colName)
+        .where(fnIsInput, isEqualTo: 'N')
+        .where(fnDatetime, isLessThan: startTimeStamp)
+        .orderBy(fnDatetime, descending: true)
+        .limit(10)
+        .get();
+  }
+
   @override
   void dispose() {
-    streamSub.cancel();
     _nameCon.dispose();
     _priceCon.dispose();
     _barcodeCon.dispose();
@@ -105,13 +128,17 @@ class ProductListState extends State<ProductList> {
         key: _scaffoldKey,
         body: Column(
           children: [
-            TopBar(
+            TopRefreshBar(
               title: topTitle,
               background: quickBlue69,
               textColor: Colors.white,
+              onRefresh: (){
+                refreshController.requestRefresh(duration: const Duration(milliseconds: 100));
+                refreshList();
+              },
             ),
             Expanded(
-              child: lawyerListView(),
+              child: refresher(),
             ),
           ],
         ),
@@ -120,8 +147,43 @@ class ProductListState extends State<ProductList> {
     );
   }
 
-  Widget lawyerListView(){
+  Widget refresher(){
+    return SmartRefresher(
+      enablePullDown: true,
+      enablePullUp: true,
+      header: ClassicHeader(
+        idleText: "당겨서 리프레시",
+        completeText: "완료",
+        refreshingText: "리프레시 중...",
+        releaseText: "새로고침",
+      ),
+      footer: CustomFooter(
+        builder: (BuildContext context,LoadStatus mode){
+          Widget body;
+          if(mode == LoadStatus.idle) body =  Text("마지막", style: TextStyle(color: quickGrayA8),);
+          else if(mode == LoadStatus.loading) body =  CupertinoActivityIndicator();
 
+          return Container(
+            height: 55.0,
+            child: Center(child:body),
+          );
+        },
+      ),
+      controller: refreshController,
+      onRefresh: refreshList,
+      onLoading: ()=>startGetList(),
+      child: listView(),
+    );
+  }
+
+  refreshList(){
+    startTimeStamp = Timestamp.now();
+    _documents = [];
+    startGetList();
+    setState(() {});
+  }
+
+  Widget listView(){
     if(_documents.length == 0){
       return Container(
         alignment: Alignment.center,
@@ -392,6 +454,7 @@ class ProductListState extends State<ProductList> {
     }).then((value) {
       barcode = null;
       showReadDocSnackBar('전송완료');
+      refreshList();
     }, onError:(error, stacktrace){
       print("$error");
       print(stacktrace.toString());
