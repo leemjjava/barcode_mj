@@ -285,19 +285,36 @@ class PriceCard extends StatelessWidget{
     Key key,
     @required this.document,
     @required this.onTap,
+    @required this.onDelete,
+    @required this.onCheckTap,
   }) : super(key:key);
 
   DocumentSnapshot document;
   GestureTapCallback onTap;
+  GestureTapCallback onDelete;
+  GestureTapCallback onCheckTap;
 
   @override
   Widget build(BuildContext context) {
     final itemMap = document.data();
     Timestamp ts = itemMap[fnDatetime];
     String dt = timestampToStrDateTime(ts);
+    String isInput = itemMap[fnIsInput];
+    Color background;
+    Icon checkIcon;
+
+    if(isInput == 'Y'){
+      background = inputGreenEB;
+      checkIcon = Icon(Icons.refresh, color: Colors.red,);
+    }else{
+      background = Colors.white;
+      checkIcon = Icon(Icons.check, color: Colors.green,);
+    }
 
     return Card(
+      margin: EdgeInsets.all(10),
       elevation: 2,
+      color: background,
       child: InkWell(
         onTap: onTap,
         child: Container(
@@ -307,28 +324,87 @@ class PriceCard extends StatelessWidget{
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              Container(
-                alignment: Alignment.centerLeft,
-                height: 50,
-                child: Text('${itemMap[fnName]}',
-                  style: TextStyle(
-                    color: Colors.blueGrey,
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+              Row(
+                children: [
+                  Expanded(child: titleText(itemMap[fnName])),
+                  SizedBox(
+                    width: 30,
+                    height: 30,
+                    child: InkWellCS(
+                      backgroundColor: Colors.transparent,
+                      child: Icon(Icons.clear),
+                      onTap: onDelete,
+                    ),
+                  )
+                ],
               ),
-              descriptionWidget('값', 15),
-              descriptionWidget('${itemMap[fnPrice]}', 25),
-              descriptionWidget('바코드', 15),
-              descriptionWidget('${itemMap[fnBarcode]}', 25),
-              Text(
-                dt,
-                style:
-                TextStyle(color: Colors.grey[600]),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: contentColumn(itemMap[fnPrice], itemMap[fnBarcode]),
+                  ),
+                  Container(
+                    width: 30,
+                    height: 30,
+                    alignment: Alignment.center,
+                    child: InkWellCS(
+                      backgroundColor: Colors.transparent,
+                      child: checkIcon,
+                      onTap: onCheckTap,
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    dt,
+                    style:
+                    TextStyle(color: Colors.grey[600]),
+                  ),
+                  countColumn(itemMap[fnCount]),
+                ],
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget contentColumn(String price, String barcode){
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        descriptionWidget('가격', 15),
+        descriptionWidget(price, 25),
+        descriptionWidget('바코드', 15),
+        descriptionWidget(barcode, 25),
+      ],
+    );
+  }
+
+  Widget countColumn(String count){
+
+    return Column(
+      children: [
+        descriptionWidget('재고', 15),
+        descriptionWidget(count??'입력없음', 15),
+      ],
+    );
+  }
+
+  Widget titleText(String name){
+    return Container(
+      alignment: Alignment.centerLeft,
+      height: 50,
+      child: Text('$name',
+        style: TextStyle(
+          color: Colors.blueGrey,
+          fontSize: 17,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );

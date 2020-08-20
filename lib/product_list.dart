@@ -10,7 +10,7 @@ import 'custom_ui/layout.dart';
 import 'custom_ui/text_field.dart';
 
 // ignore: must_be_immutable
-class ProductList extends StatefulWidget {
+class ProductList extends StatefulWidget{
   ProductList({
     Key key,
     this.type
@@ -103,7 +103,6 @@ class ProductListState extends State<ProductList> {
     return SafeArea(
       child: Scaffold(
         key: _scaffoldKey,
-        backgroundColor: quickGrayC9,
         body: Column(
           children: [
             TopBar(
@@ -114,19 +113,9 @@ class ProductListState extends State<ProductList> {
             Expanded(
               child: lawyerListView(),
             ),
-            Container(
-              padding: EdgeInsets.only(left: 5, right: 5),
-              child: BorderBtnCS(
-                title: '스캔',
-                height: 50,
-                fontSize: 20,
-                radius: 5,
-                fontWeight: FontWeight.w800,
-                onPressed: barcodeScanning,
-              ),
-            )
           ],
         ),
+        floatingActionButton: getFloatingBtn(),
       ),
     );
   }
@@ -147,10 +136,21 @@ class ProductListState extends State<ProductList> {
         final document = _documents[index];
 
         return PriceCard(
-            document: document,
-            onTap: ()=> showUpdateOrDeleteDocDialog(document)
+          document: document,
+          onTap: ()=> showUpdateOrDeleteDocDialog(document),
+          onDelete: ()=> deleteDoc(document.id),
+          onCheckTap: ()=> updateIsInput(document),
         );
       },
+    );
+  }
+
+  Widget getFloatingBtn(){
+    if(widget.type != productListTypeAll) return Container();
+    return FloatingActionButton(
+      onPressed: barcodeScanning,
+      child: Icon(Icons.camera_alt),
+      backgroundColor: Colors.blue,
     );
   }
 
@@ -290,6 +290,14 @@ class ProductListState extends State<ProductList> {
       fnName: name,
       fnPrice: price,
       fnCount: count,
+    });
+  }
+
+  void updateIsInput(QueryDocumentSnapshot document) {
+    final isInput = document.data()[fnIsInput];
+    final inputType = isInput == 'Y' ? 'N' : 'Y';
+    firestore.collection(colName).doc(document.id).update({
+      fnIsInput: inputType,
     });
   }
 

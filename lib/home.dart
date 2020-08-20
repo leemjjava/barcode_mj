@@ -1,4 +1,4 @@
-import 'package:barcode_mj/product_list.dart';
+import 'package:barcode_mj/product_page_view.dart';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:barcode_mj/util/util.dart';
 import 'package:flutter/cupertino.dart';
@@ -37,36 +37,21 @@ class HomeState extends State<Home>{
                   icon: Icon(Icons.list, size: 40,),
                   title: "전체 상품",
                   content: "입력/미입력 전체 리스트",
-                  onTap: (){
-                    Route route = createSlideUpRoute(
-                        widget : ProductList(type: productListTypeAll,)
-                    );
-                    Navigator.push(context, route);
-                  },
+                  onTap: ()=>serviceItemOnTap(productListTypeAll),
                 ),
                 SizedBox(height: 10,),
                 serviceItem(
                   icon: Icon(Icons.assignment_late, size: 40, color: Colors.red,),
                   title: "미입력 상품",
                   content: "포스기에 미등록된 상품 리스트",
-                  onTap: (){
-                    Route route = createSlideUpRoute(
-                        widget : ProductList(type: productListTypeNotInput,)
-                    );
-                    Navigator.push(context, route);
-                  },
+                  onTap: ()=>serviceItemOnTap(productListTypeNotInput),
                 ),
                 SizedBox(height: 10,),
                 serviceItem(
                   icon: Icon(Icons.assignment, size: 40, color: Colors.blue),
                   title: "입력 상품",
                   content: "포스기에 등록된 상품 리스트",
-                  onTap: (){
-                    Route route = createSlideUpRoute(
-                        widget : ProductList(type: productListTypeInput,)
-                    );
-                    Navigator.push(context, route);
-                  },
+                  onTap: ()=>serviceItemOnTap(productListTypeInput),
                 ),
                 SizedBox(height: 10,),
               ],
@@ -75,6 +60,11 @@ class HomeState extends State<Home>{
         ),
       )
     );
+  }
+
+  void serviceItemOnTap(String type){
+    Route route = createSlideUpRoute(widget : ProductPageView(type: type,));
+    Navigator.push(context, route);
   }
 
   Widget serviceItem({

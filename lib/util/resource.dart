@@ -48,6 +48,8 @@ const Color quickYellowFF = Color(0xFFFFC316);
 
 const Color quickRedFF = Color(0xFFFF1D1D);
 
+const Color inputGreenEB = Color(0xFFEBFDDA);
+
 const LAWYER_TYPE_CODE = 10000;
 
 const COPR_TYPE = 40000;
