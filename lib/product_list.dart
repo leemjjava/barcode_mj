@@ -62,12 +62,12 @@ class ProductListState extends State<ProductList>{
       else refreshController.loadComplete();
 
       final documents = snapshot.docs;
-      if(documents.isEmpty) return;
 
-      final lastDocuments = documents[snapshot.docs.length -1];
-      startTimeStamp = lastDocuments.data()[fnDatetime];
-
-      _documents.addAll(snapshot.docs);
+      if(documents.isEmpty == false){
+        final lastDocuments = documents[snapshot.docs.length -1];
+        startTimeStamp = lastDocuments.data()[fnDatetime];
+        _documents.addAll(snapshot.docs);
+      }
 
       setState(() {});
     },onError:(error, stacktrace){
@@ -328,15 +328,25 @@ class ProductListState extends State<ProductList>{
   void changeLocalItem(int index,{bool isDelete}) async {
     final document = _documents[index];
     _documents.removeAt(index);
-    if(isDelete == true){
-      setState(() {});
-      return;
-    }
+
+    if(isDelete == true) return showDeleteSnackBar(document.data()[fnName]);
 
     final newDocument = await getDocument(document.id);
     setState((){
       if(index == _documents.length -1)_documents.add(newDocument);
       _documents.insert(index, newDocument);
+      showReadDocSnackBar('${document.data()[fnName]} 수정');
+    });
+  }
+
+  void showDeleteSnackBar(String name){
+    String message;
+    if(widget.type == productListTypeInput) message = '미입력으로 이동';
+    else if(widget.type == productListTypeNotInput) message = '입력으로 이동';
+    else message = '삭제';
+
+    setState(() {
+      showReadDocSnackBar('$name $message');
     });
   }
 

@@ -276,14 +276,14 @@ class HomeState extends State<Home>{
     }
 
     List<List<dynamic>> rows = [];
-    rows.add(["상품명", "가격", "바코드", "재고",]);
+    rows.add(["바코드", "상품명", "가격", "재고",]);
 
     for (final document in cloud.docs) {
       List<dynamic> row = [];
 
+      row.add(document.data()[fnBarcode]);
       row.add(document.data()[fnName]);
       row.add(document.data()[fnPrice]);
-      row.add(document.data()[fnBarcode]);
       row.add(document.data()[fnCount]);
 
       rows.add(row);

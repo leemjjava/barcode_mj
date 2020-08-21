@@ -390,15 +390,15 @@ class PriceCard extends StatelessWidget{
               Row(
                 children: [
                   Expanded(child: titleText(map[fnName])),
-                  SizedBox(
-                    width: 30,
-                    height: 30,
-                    child: InkWellCS(
-                      backgroundColor: Colors.transparent,
+                  InkWellCS(
+                    backgroundColor: Colors.transparent,
+                    child: SizedBox(
+                      width: 50,
+                      height: 50,
                       child: Icon(Icons.clear),
-                      onTap: onDelete,
                     ),
-                  )
+                    onTap: onDelete,
+                  ),
                 ],
               ),
 
@@ -407,15 +407,14 @@ class PriceCard extends StatelessWidget{
                   Expanded(
                     child: contentColumn(map[fnPrice], map[fnBarcode]),
                   ),
-                  Container(
-                    width: 30,
-                    height: 30,
-                    alignment: Alignment.center,
-                    child: InkWellCS(
-                      backgroundColor: Colors.transparent,
+                  InkWellCS(
+                    backgroundColor: Colors.transparent,
+                    child: SizedBox(
+                      width: 50,
+                      height: 50,
                       child: checkIcon,
-                      onTap: onCheckTap,
                     ),
+                    onTap: onCheckTap,
                   ),
                 ],
               ),
