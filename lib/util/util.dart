@@ -344,3 +344,26 @@ String timestampToStrDateTime(Timestamp ts) {
       .fromMicrosecondsSinceEpoch(ts.microsecondsSinceEpoch)
       .toString();
 }
+
+Widget alertText(String title, double size){
+  return Text(title,
+    style: TextStyle(
+        color: quickBlue07,
+        fontSize: size
+    ),
+  );
+}
+
+Widget alertBtn(String title, VoidCallback onPressed){
+  return SizedBox(
+    width: 60,
+    child: FlatButton(
+      child: Text(title,
+        style: TextStyle(
+            color: quickBlack28
+        ),
+      ),
+      onPressed: onPressed,
+    ),
+  );
+}
