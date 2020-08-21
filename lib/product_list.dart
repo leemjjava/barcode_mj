@@ -31,7 +31,7 @@ class ProductListState extends State<ProductList>{
   Timestamp startTimeStamp;
 
   FirebaseFirestore firestore;
-  List<DocumentSnapshot> _documents = [];
+  List<DocumentSnapshot> _documents;
 
   double inputHeight = 40, inputFontSize = 15;
 
@@ -56,7 +56,9 @@ class ProductListState extends State<ProductList>{
     else snapshotFuture = setAllStream();
 
     snapshotFuture.then((snapshot){
-      if(_documents.length == 0) refreshController.refreshCompleted();
+      if(_documents == null) _documents = [];
+
+      if( _documents.length == 0) refreshController.refreshCompleted();
       else refreshController.loadComplete();
 
       final documents = snapshot.docs;
@@ -176,12 +178,23 @@ class ProductListState extends State<ProductList>{
 
   refreshList(){
     startTimeStamp = Timestamp.now();
-    _documents = [];
+    _documents = null;
     startGetList();
     setState(() {});
   }
 
   Widget listView(){
+    if(_documents == null){
+      return Container(
+        alignment: Alignment.center,
+        padding: EdgeInsets.all(100),
+        child: LinearProgressIndicator(
+          minHeight: 5,
+          backgroundColor: Colors.transparent,
+          valueColor: new AlwaysStoppedAnimation<Color>(Colors.grey),
+        ),
+      );
+    }
     if(_documents.length == 0){
       return Container(
         alignment: Alignment.center,
@@ -237,7 +250,7 @@ class ProductListState extends State<ProductList>{
     firestore.collection(colName).where(fnBarcode, isEqualTo: barcode).get().then((value){
       List<DocumentSnapshot> checkDocuments = value.docs;
 
-      if(_documents.isEmpty) showCreateDocDialog();
+      if(checkDocuments.isEmpty) showCreateDocDialog();
       else showProductView(checkDocuments[0].id);
 
     }, onError: (error, stacktrace){
