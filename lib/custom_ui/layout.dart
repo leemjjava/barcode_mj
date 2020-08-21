@@ -344,23 +344,24 @@ class PriceCard extends StatelessWidget{
 
   PriceCard({
     Key key,
-    @required this.document,
+    @required this.map,
     @required this.onTap,
     @required this.onDelete,
     @required this.onCheckTap,
+    @required this.onLongPress,
   }) : super(key:key);
 
-  DocumentSnapshot document;
+  Map<String, dynamic> map;
   GestureTapCallback onTap;
   GestureTapCallback onDelete;
   GestureTapCallback onCheckTap;
+  GestureLongPressCallback onLongPress;
 
   @override
   Widget build(BuildContext context) {
-    final itemMap = document.data();
-    Timestamp ts = itemMap[fnDatetime];
+    Timestamp ts = map[fnDatetime];
     String dt = timestampToStrDateTime(ts);
-    String isInput = itemMap[fnIsInput];
+    String isInput = map[fnIsInput];
     Color background;
     Icon checkIcon;
 
@@ -378,6 +379,7 @@ class PriceCard extends StatelessWidget{
       color: background,
       child: InkWell(
         onTap: onTap,
+        onLongPress: onLongPress,
         child: Container(
           height: 200,
           padding: const EdgeInsets.all(8),
@@ -387,7 +389,7 @@ class PriceCard extends StatelessWidget{
             children: <Widget>[
               Row(
                 children: [
-                  Expanded(child: titleText(itemMap[fnName])),
+                  Expanded(child: titleText(map[fnName])),
                   SizedBox(
                     width: 30,
                     height: 30,
@@ -403,7 +405,7 @@ class PriceCard extends StatelessWidget{
               Row(
                 children: [
                   Expanded(
-                    child: contentColumn(itemMap[fnPrice], itemMap[fnBarcode]),
+                    child: contentColumn(map[fnPrice], map[fnBarcode]),
                   ),
                   Container(
                     width: 30,
@@ -425,7 +427,7 @@ class PriceCard extends StatelessWidget{
                     style:
                     TextStyle(color: Colors.grey[600]),
                   ),
-                  countColumn(itemMap[fnCount]),
+                  countColumn(map[fnCount]),
                 ],
               ),
             ],

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:barcode_mj/product_view.dart';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:barcode_mj/util/util.dart';
 import 'package:barcode_scan/barcode_scan.dart';
@@ -23,17 +24,14 @@ class ProductList extends StatefulWidget{
   ProductListState createState()=>ProductListState();
 }
 
-class ProductListState extends State<ProductList> with AutomaticKeepAliveClientMixin<ProductList>{
-  @override
-  // TODO: implement wantKeepAlive
-  bool get wantKeepAlive => true;
+class ProductListState extends State<ProductList>{
   RefreshController refreshController = RefreshController(initialRefresh: false);
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   String barcode, topTitle;
   Timestamp startTimeStamp;
 
   FirebaseFirestore firestore;
-  List<QueryDocumentSnapshot> _documents = [];
+  List<DocumentSnapshot> _documents = [];
 
   double inputHeight = 40, inputFontSize = 15;
 
@@ -198,10 +196,11 @@ class ProductListState extends State<ProductList> with AutomaticKeepAliveClientM
         final document = _documents[index];
 
         return PriceCard(
-          document: document,
-          onTap: ()=> showUpdateOrDeleteDocDialog(document),
-          onDelete: ()=> deleteDoc(document.id),
-          onCheckTap: ()=> updateIsInput(document),
+          map: document.data(),
+          onTap: ()=> showUpdateOrDeleteDocDialog(document, index),
+          onDelete: ()=> deleteDoc(document.id, index),
+          onCheckTap: ()=> updateIsInput(document, index),
+          onLongPress: ()=> showProductView(document.id),
         );
       },
     );
@@ -236,10 +235,10 @@ class ProductListState extends State<ProductList> with AutomaticKeepAliveClientM
 
   void checkBarcodeCreate(){
     firestore.collection(colName).where(fnBarcode, isEqualTo: barcode).get().then((value){
-      List<QueryDocumentSnapshot> _documents = value.docs;
+      List<DocumentSnapshot> checkDocuments = value.docs;
 
       if(_documents.isEmpty) showCreateDocDialog();
-      else showAlert(context, '동일한 상품이 존재합니다.');
+      else showProductView(checkDocuments[0].id);
 
     }, onError: (error, stacktrace){
       print("onError: $error");
@@ -247,8 +246,13 @@ class ProductListState extends State<ProductList> with AutomaticKeepAliveClientM
       showAlert(context,stacktrace.toString());
     });
   }
+  
+  void showProductView(String docID){
+    Route route = createSlideUpRoute(widget : ProductView(docId: docID,));
+    Navigator.push(context, route);
+  }
 
-  void showUpdateOrDeleteDocDialog(DocumentSnapshot doc) {
+  void showUpdateOrDeleteDocDialog(DocumentSnapshot doc, int index) {
     final itemMap = doc.data();
     _nameCon.text = itemMap[fnName];
     _priceCon.text = itemMap[fnPrice];
@@ -288,12 +292,12 @@ class ProductListState extends State<ProductList> with AutomaticKeepAliveClientM
                         Navigator.pop(context);
                       }),
                       alertBtn('수정', () {
-                        updateDoc(doc.id);
+                        updateDoc(doc.id, index);
                         textControllerClear();
                         Navigator.pop(context);
                       }),
                       alertBtn('삭제', () {
-                        deleteDoc(doc.id);
+                        deleteDoc(doc.id, index);
                         textControllerClear();
                         Navigator.pop(context);
                       }),
@@ -331,7 +335,29 @@ class ProductListState extends State<ProductList> with AutomaticKeepAliveClientM
     );
   }
 
-  void updateDoc(String docID) {
+  void changeLocalItem(int index,{bool isDelete}) async {
+    final document = _documents[index];
+    _documents.removeAt(index);
+    if(isDelete == true){
+      setState(() {});
+      return;
+    }
+
+    final newDocument = await getDocument(document.id);
+    setState((){
+      if(index == _documents.length -1)_documents.add(newDocument);
+      _documents.insert(index, newDocument);
+    });
+  }
+
+  Future<DocumentSnapshot> getDocument(String docID) {
+    return firestore
+        .collection(colName)
+        .doc(docID)
+        .get();
+  }
+
+  void updateDoc(String docID, int index) {
     final name = _nameCon.text;
     final price = _priceCon.text;
     final barcode = _barcodeCon.text;
@@ -352,19 +378,42 @@ class ProductListState extends State<ProductList> with AutomaticKeepAliveClientM
       fnName: name,
       fnPrice: price,
       fnCount: count,
+    }).then((value){
+      changeLocalItem(index);
+    },onError:(error, stacktrace){
+      print("$error");
+      print(stacktrace.toString());
+
+      showAlert(context,'$error : ${stacktrace.toString()}');
     });
   }
 
-  void updateIsInput(QueryDocumentSnapshot document) {
+  void updateIsInput(DocumentSnapshot document, int index) {
     final isInput = document.data()[fnIsInput];
     final inputType = isInput == 'Y' ? 'N' : 'Y';
+
     firestore.collection(colName).doc(document.id).update({
       fnIsInput: inputType,
+    }).then((value){
+      final isTypeAll = widget.type != productListTypeAll;
+      changeLocalItem(index, isDelete: isTypeAll);
+    },onError:(error, stacktrace){
+      print("$error");
+      print(stacktrace.toString());
+
+      showAlert(context,'$error : ${stacktrace.toString()}');
     });
   }
 
-  void deleteDoc(String docID) {
-    firestore.collection(colName).doc(docID).delete();
+  void deleteDoc(String docID, int index) {
+    firestore.collection(colName).doc(docID).delete().then((value){
+      changeLocalItem(index, isDelete: true);
+    },onError:(error, stacktrace){
+      print("$error");
+      print(stacktrace.toString());
+
+      showAlert(context,'$error : ${stacktrace.toString()}');
+    });
   }
 
   void showReadDocSnackBar(String title) {
