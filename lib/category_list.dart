@@ -37,6 +37,7 @@ class CategoryListState extends State<CategoryList>{
 
     _documents = documents.where((item){
       if(item.data()[fnCategory] == null) return true;
+      else if(item.data()[fnCategory] == inputCategoryList[0]) return true;
       return false;
     }).toList();
 

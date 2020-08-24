@@ -345,14 +345,12 @@ class PriceCard extends StatelessWidget{
     Key key,
     @required this.map,
     @required this.onTap,
-    @required this.onDelete,
     @required this.onCheckTap,
     @required this.onLongPress,
   }) : super(key:key);
 
   Map<String, dynamic> map;
   GestureTapCallback onTap;
-  GestureTapCallback onDelete;
   GestureTapCallback onCheckTap;
   GestureLongPressCallback onLongPress;
 

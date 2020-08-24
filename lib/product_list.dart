@@ -8,6 +8,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'custom_ui/alert_dialog.dart';
 import 'custom_ui/button.dart';
 import 'custom_ui/layout.dart';
 import 'custom_ui/text_field.dart';
@@ -32,14 +33,6 @@ class ProductListState extends State<ProductList>{
 
   FirebaseFirestore firestore;
   List<DocumentSnapshot> _documents;
-  String category;
-
-  double inputHeight = 40, inputFontSize = 15;
-
-  TextEditingController _nameCon = TextEditingController();
-  TextEditingController _priceCon = TextEditingController();
-  TextEditingController _barcodeCon = TextEditingController();
-  TextEditingController _countCon = TextEditingController();
 
   @override
   void initState() {
@@ -47,7 +40,6 @@ class ProductListState extends State<ProductList>{
 
     firestore = FirebaseFirestore.instance;
     startTimeStamp = Timestamp.now();
-    category = inputCategoryList[0];
     startGetList();
   }
 
@@ -116,10 +108,6 @@ class ProductListState extends State<ProductList>{
 
   @override
   void dispose() {
-    _nameCon.dispose();
-    _priceCon.dispose();
-    _barcodeCon.dispose();
-    _countCon.dispose();
     super.dispose();
   }
 
@@ -212,7 +200,6 @@ class ProductListState extends State<ProductList>{
         return PriceCard(
           map: document.data(),
           onTap: ()=> showUpdateOrDeleteDocDialog(document, index),
-          onDelete: ()=> deleteDoc(document.id, index),
           onCheckTap: ()=> updateIsInput(document, index),
           onLongPress: ()=> showProductView(document.id),
         );
@@ -267,74 +254,18 @@ class ProductListState extends State<ProductList>{
   }
 
   void showUpdateOrDeleteDocDialog(DocumentSnapshot doc, int index) {
-    final itemMap = doc.data();
-    _nameCon.text = itemMap[fnName];
-    _priceCon.text = itemMap[fnPrice];
-    _barcodeCon.text = itemMap[fnBarcode];
-    _countCon.text = itemMap[fnCount] ?? '';
-    category = itemMap[fnCategory] ?? inputCategoryList[0];
-
     showDialog(
-      barrierDismissible: false,
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          contentPadding: EdgeInsets.only(left: 15, right: 15, top: 15, bottom: 5),
-          content: Container(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  alertText('상품수정', 20),
-                  SizedBox(height: 20,),
-                  alertText('상품명', 15),
-                  getNameTf(),
-                  SizedBox(height: 10,),
-                  alertText('가격', 15),
-                  getPriceTf(),
-                  SizedBox(height: 10,),
-                  alertText('바코드', 15),
-                  getBarcodeTf(),
-                  SizedBox(height: 10,),
-                  alertText('수량', 15),
-                  getCountTf(),
-                  SizedBox(height: 10,),
-                  noticeText('카테고리 분류'),
-                  DropDownBtnCS(
-                    value: category,
-                    hint: "분류",
-                    itemList: inputCategoryList,
-                    onChanged: (value){
-                      category = value;
-                      setState(() {});
-                    },
-                  ),
-                  SizedBox(height: 10,),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      alertBtn('취소', () {
-                        textControllerClear();
-                        Navigator.pop(context);
-                      }),
-                      alertBtn('수정', () {
-                        updateDoc(doc.id, index);
-                        textControllerClear();
-                        Navigator.pop(context);
-                      }),
-                      alertBtn('삭제', () {
-                        deleteDoc(doc.id, index);
-                        textControllerClear();
-                        Navigator.pop(context);
-                      }),
-                    ],
-                  ),
-                ],
-              ),
-            )
-          ),
-        );
-      },
+        barrierDismissible: false,
+        context: context,
+        builder: (context){
+          return ProductUpdateDialog(
+            showReadDocSnackBar: showReadDocSnackBar,
+            doc: doc,
+            changeLocalItem: (isDelete){
+              changeLocalItem(index,isDelete: isDelete);
+            },
+          );
+        },
     );
   }
 
@@ -370,40 +301,6 @@ class ProductListState extends State<ProductList>{
         .get();
   }
 
-  void updateDoc(String docID, int index) {
-    final name = _nameCon.text;
-    final price = _priceCon.text;
-    final barcode = _barcodeCon.text;
-    final count = _countCon.text.isEmpty ? "" : _countCon.text;
-    category = category == inputCategoryList[0] ? null : category;
-
-    String message;
-    if(barcode.isEmpty) message = "바코드 데이터가 없습니다.";
-    if(price.isEmpty) message = "가격 데이터가 없습니다.";
-    if(name.isEmpty) message = "이름 데이터가 없습니다.";
-
-    if(message != null) {
-      showReadDocSnackBar(message);
-      return;
-    }
-
-    firestore.collection(colName).doc(docID).update({
-      fnBarcode: barcode,
-      fnName: name,
-      fnPrice: price,
-      fnCount: count,
-      fnCategory: category,
-    }).then((value){
-      changeLocalItem(index);
-      category = inputCategoryList[0];
-    },onError:(error, stacktrace){
-      print("$error");
-      print(stacktrace.toString());
-
-      showAlert(context,'$error : ${stacktrace.toString()}');
-    });
-  }
-
   void updateIsInput(DocumentSnapshot document, int index) {
     final isInput = document.data()[fnIsInput];
     final inputType = isInput == 'Y' ? 'N' : 'Y';
@@ -413,17 +310,6 @@ class ProductListState extends State<ProductList>{
     }).then((value){
       final isTypeAll = widget.type != productListTypeAll;
       changeLocalItem(index, isDelete: isTypeAll);
-    },onError:(error, stacktrace){
-      print("$error");
-      print(stacktrace.toString());
-
-      showAlert(context,'$error : ${stacktrace.toString()}');
-    });
-  }
-
-  void deleteDoc(String docID, int index) {
-    firestore.collection(colName).doc(docID).delete().then((value){
-      changeLocalItem(index, isDelete: true);
     },onError:(error, stacktrace){
       print("$error");
       print(stacktrace.toString());
@@ -449,170 +335,17 @@ class ProductListState extends State<ProductList>{
       );
   }
 
-  void showCreateDocDialog() {
+  void showCreateDocDialog(){
     showDialog(
       barrierDismissible: false,
       context: context,
       builder: (context) {
-        return AlertDialog(
-          contentPadding: EdgeInsets.only(left: 15, right: 15, top: 15, bottom: 5),
-          content: Container(
-            child: SingleChildScrollView(
-              child: Column(
-                children: <Widget>[
-                  alertText('상품등록', 20),
-                  SizedBox(height: 20,),
-                  Container(
-                    alignment: Alignment.center,
-                    height: 50,
-                    child: Text(barcode,),
-                  ),
-                  SizedBox(height: 10,),
-                  getNameTf(),
-                  SizedBox(height: 10,),
-                  getPriceTf(),
-                  SizedBox(height: 10,),
-                  getCountTf(),
-                  SizedBox(height: 10,),
-                  noticeText('카테고리 분류'),
-                  DropDownBtnCS(
-                    value: category,
-                    hint: "분류",
-                    itemList: categoryList,
-                    onChanged: (value){
-                      category = value;
-                      setState(() {});
-                    },
-                  ),
-                  SizedBox(height: 20,),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      alertBtn('취소', () {
-                        textControllerClear();
-                        Navigator.pop(context);
-                      }),
-                      alertBtn('입력', () {
-                        createDoc();
-                        textControllerClear();
-                        Navigator.pop(context);
-                      }),
-                    ],
-                  ),
-                ],
-              ),
-            )
-          ),
+        return ProductInsertDialog(
+          barcode: barcode,
+          showReadDocSnackBar:showReadDocSnackBar,
+          refreshList:refreshList,
         );
       },
     );
-  }
-
-  Widget noticeText(String content){
-    return Container(
-      margin: EdgeInsets.only(bottom: 5),
-      child: Text(
-        content,
-        style: TextStyle(
-          color: quickGray7b,
-          fontSize: 12,
-        ),
-      ),
-    );
-  }
-
-  void createDoc() {
-    final name = _nameCon.text;
-    final price = _priceCon.text;
-    String count = _countCon.text.isEmpty ? "": _countCon.text;
-    category = category == inputCategoryList[0] ? null : category;
-
-    String message;
-    if(barcode == null) message = "바코드를 입력하세요.";
-    if(_nameCon.text.isEmpty) message = "상품명을 입력하세요.";
-    if(_priceCon.text.isEmpty) message = "상품가격을 입력하세요.";
-
-    if(message != null) showReadDocSnackBar(message);
-
-    firestore.collection(colName).add({
-      fnBarcode: barcode,
-      fnName: name,
-      fnPrice: price,
-      fnCount: count,
-      fnDatetime: Timestamp.now(),
-      fnIsInput: 'N',
-      fnCategory: category,
-    }).then((value) {
-      textControllerClear();
-      barcode = null;
-      category = inputCategoryList[0];
-      showReadDocSnackBar('전송완료');
-      refreshList();
-    }, onError:(error, stacktrace){
-      print("$error");
-      print(stacktrace.toString());
-      showAlert(context ,stacktrace.toString());
-    });
-  }
-
-  Widget getNameTf(){
-    return UnderLineTfCS(
-      controller: _nameCon,
-      textColor: quickBlack00,
-      underLineColor: quickBlack0d,
-      cursorColor: quickBlack0d,
-      hint: '상품명',
-      height: inputHeight,
-      width: 1.0,
-      fontSize: inputFontSize,
-    );
-  }
-
-  Widget getPriceTf(){
-    return UnderLineTfCS(
-      controller: _priceCon,
-      textColor: quickBlack00,
-      underLineColor: quickBlack0d,
-      cursorColor: quickBlack0d,
-      hint: '거래금액(원)',
-      height: inputHeight,
-      width: 1.0,
-      fontSize: inputFontSize,
-      isWonDigits: true,
-    );
-  }
-
-  Widget getCountTf(){
-    return UnderLineTfCS(
-      controller: _countCon,
-      textColor: quickBlack00,
-      underLineColor: quickBlack0d,
-      cursorColor: quickBlack0d,
-      hint: '수량',
-      height: inputHeight,
-      width: 1.0,
-      fontSize: inputFontSize,
-      isOnlyDigits: true,
-    );
-  }
-
-  Widget getBarcodeTf(){
-    return UnderLineTfCS(
-      controller: _barcodeCon,
-      textColor: quickBlack00,
-      underLineColor: quickBlack0d,
-      cursorColor: quickBlack0d,
-      hint: '바코드',
-      height: inputHeight,
-      width: 1.0,
-      fontSize: inputFontSize,
-    );
-  }
-
-  textControllerClear(){
-    _nameCon.clear();
-    _priceCon.clear();
-    _barcodeCon.clear();
-    _countCon.clear();
   }
 }

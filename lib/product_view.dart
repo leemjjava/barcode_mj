@@ -205,7 +205,6 @@ class ProductViewState extends State<ProductView>{
     final price = _priceCon.text;
     final barcode = _barcodeCon.text;
     final count = _countCon.text.isEmpty ? "" : _countCon.text;
-    category = category == inputCategoryList[0] ? null : category;
 
     String message;
     if(barcode.isEmpty) message = "바코드 데이터가 없습니다.";
