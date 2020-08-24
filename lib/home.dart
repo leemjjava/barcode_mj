@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:barcode_mj/category_list.dart';
 import 'package:barcode_mj/category_page_view.dart';
 import 'package:barcode_mj/product_page_view.dart';
+import 'package:barcode_mj/search_list.dart';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:barcode_mj/util/util.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -105,6 +106,13 @@ class HomeState extends State<Home>{
                   onTap: ()=>categoryOnTap(),
                 ),
                 SizedBox(height: 10,),
+                serviceItem(
+                  icon: Icon(Icons.search, size: 40, color: Colors.orange),
+                  title: "검색",
+                  content: "상품명으로 상품 목록을 검색합니다.",
+                  onTap: ()=>searchOnTap(),
+                ),
+                SizedBox(height: 10,),
               ],
             ),
           )
@@ -120,6 +128,11 @@ class HomeState extends State<Home>{
 
   void categoryOnTap(){
     Route route = createSlideUpRoute(widget : CategoryPageView());
+    Navigator.push(context, route);
+  }
+
+  void searchOnTap(){
+    Route route = createSlideUpRoute(widget : SearchList());
     Navigator.push(context, route);
   }
 

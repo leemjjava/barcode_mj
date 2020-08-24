@@ -152,6 +152,7 @@ class TopRefreshBar extends StatelessWidget{
   }
 }
 
+// ignore: must_be_immutable
 class TopSearchBar extends StatelessWidget{
   TopSearchBar({
     Key key,
@@ -177,7 +178,7 @@ class TopSearchBar extends StatelessWidget{
               controller: searchTec,
               decoration: InputDecoration(
                 border: InputBorder.none,
-                hintText: "쾌변 통합 검색",
+                hintText: "검색",
                 hintStyle: TextStyle(color:Color(0xFFA0A0A0)),
               ),
               onSubmitted: (value){
@@ -203,9 +204,8 @@ class TopSearchBar extends StatelessWidget{
       showAlert(context, "검색어를 입력해 주세요.");
       return;
     }
-    searchTec.clear();
-    FocusScope.of(context).requestFocus(new FocusNode());
 
+    FocusScope.of(context).requestFocus(new FocusNode());
   }
 }
 
@@ -390,6 +390,7 @@ class PriceCard extends StatelessWidget{
                   Expanded(
                     child: contentColumn(map[fnPrice], map[fnBarcode]),
                   ),
+                  onCheckTap == null ? Container() :
                   InkWellCS(
                     backgroundColor: Colors.transparent,
                     child: SizedBox(
