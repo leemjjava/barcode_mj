@@ -1,13 +1,21 @@
 import 'package:barcode_mj/home.dart';
+import 'package:barcode_mj/provider/product_provider.dart';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:barcode_mj/util/util.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
 import 'custom_ui/layout.dart';
 
 void main() {
-  return runApp(MyApp());
+  return runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => ProductProvider()),
+        ],
+        child: MyApp(),
+      )
+  );
 }
 
 class MyApp extends StatefulWidget {
@@ -40,9 +48,8 @@ class _MyAppState extends State<MyApp> {
 
           // Once complete, show your application
           if (snapshot.connectionState == ConnectionState.done) {
-            return MaterialApp(
-              home: Home(),
-            );
+            Provider.of<ProductProvider>(context,listen: false).getProducts();
+            return Home();
           }
 
           // Otherwise, show something whilst waiting for initialization to complete

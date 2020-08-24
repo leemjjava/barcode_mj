@@ -25,6 +25,7 @@ class ProductViewState extends State<ProductView>{
   double inputHeight = 40, inputFontSize = 15;
   FirebaseFirestore firestore;
   DocumentSnapshot document;
+  String category;
 
   TextEditingController _nameCon = TextEditingController();
   TextEditingController _priceCon = TextEditingController();
@@ -35,6 +36,7 @@ class ProductViewState extends State<ProductView>{
   void initState() {
     super.initState();
     firestore = FirebaseFirestore.instance;
+    category = inputCategoryList[0];
     setDocument();
   }
 
@@ -45,7 +47,7 @@ class ProductViewState extends State<ProductView>{
       _priceCon.text = document.data()[fnPrice];
       _barcodeCon.text = document.data()[fnBarcode];
       _countCon.text = document.data()[fnCount] ?? '입력 없음';
-
+      category = document.data()[fnCategory] ?? inputCategoryList[0];
       setState(() {});
     });
   }
@@ -82,6 +84,18 @@ class ProductViewState extends State<ProductView>{
                             inputBox(getBarcodeTf(), "바코드 번호"),
                             SizedBox(height: 20,),
                             inputBox(getCountTf(), "재고"),
+                            SizedBox(height: 10,),
+                            noticeText('카테고리 분류'),
+                            DropDownBtnCS(
+                              value: category,
+                              hint: "분류",
+                              itemList: inputCategoryList,
+                              onChanged: (value){
+                                category = value;
+                                setState(() {});
+                              },
+                            ),
+                            SizedBox(height: 20,),
                             SizedBox(height: 60,),
                           ]
                       ),
@@ -191,6 +205,7 @@ class ProductViewState extends State<ProductView>{
     final price = _priceCon.text;
     final barcode = _barcodeCon.text;
     final count = _countCon.text.isEmpty ? "" : _countCon.text;
+    category = category == inputCategoryList[0] ? null : category;
 
     String message;
     if(barcode.isEmpty) message = "바코드 데이터가 없습니다.";
@@ -207,6 +222,7 @@ class ProductViewState extends State<ProductView>{
       fnName: name,
       fnPrice: price,
       fnCount: count,
+      fnCategory: category,
     }).then((value){
       showOkDialog(context: context, message: "수정이 완료되었습니다.", onDismiss: ()=> Navigator.pop(context));
     },onError:(error, stacktrace){

@@ -39,25 +39,7 @@ class ProductPageViewState extends State<ProductPageView>{
 
   @override
   Widget build(BuildContext context) {
-//    return mainPageView();
     return infinityPageView();
-  }
-
-  Widget mainPageView(){
-    return PageView(
-      controller: _pageController,
-      children: <Widget>[
-        ProductList(type: productListTypeNotInput,),
-        ProductList(type: productListTypeAll,),
-        ProductList(type: productListTypeInput,),
-      ],
-      onPageChanged: (index){
-        setState(() {
-          FocusScope.of(context).requestFocus(new FocusNode());
-          pageIndex = index;
-        });
-      },
-    );
   }
 
   Widget infinityPageView(){

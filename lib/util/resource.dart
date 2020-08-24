@@ -71,7 +71,20 @@ final String fnPrice = "price";
 final String fnDatetime = "datetime";
 final String fnIsInput = "isInput";
 final String fnCount = "count";
+final String fnCategory = "category";
 
 final String productListTypeAll = 'LIST_ALL';
 final String productListTypeInput = 'LIST_INPUT';
 final String productListTypeNotInput = 'LIST_NOT_INPUT';
+
+final inputCategoryList = [
+  '카테고리 미 분류','전자제품','행거','주방용품','프라이팬',
+  '냄비','액자','공구','소형공구',
+  '주방잡화','욕실잡화','화장품','문구',
+];
+
+final categoryList = [
+  '전자제품','행거','주방용품','프라이팬',
+  '냄비','액자','공구','소형공구',
+  '주방잡화','욕실잡화','화장품','문구',
+];

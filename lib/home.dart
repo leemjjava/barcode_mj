@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:barcode_mj/category_list.dart';
+import 'package:barcode_mj/category_page_view.dart';
 import 'package:barcode_mj/product_page_view.dart';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:barcode_mj/util/util.dart';
@@ -96,6 +98,13 @@ class HomeState extends State<Home>{
                   onTap: ()=>showFileDialog(),
                 ),
                 SizedBox(height: 10,),
+                serviceItem(
+                  icon: Icon(Icons.category, size: 40, color: Colors.pink),
+                  title: "카테고리 입력",
+                  content: "카테고리를 입력하고 카테고리 별로 목록을 확인합니다.",
+                  onTap: ()=>categoryOnTap(),
+                ),
+                SizedBox(height: 10,),
               ],
             ),
           )
@@ -106,6 +115,11 @@ class HomeState extends State<Home>{
 
   void serviceItemOnTap(String type){
     Route route = createSlideUpRoute(widget : ProductPageView(type: type,));
+    Navigator.push(context, route);
+  }
+
+  void categoryOnTap(){
+    Route route = createSlideUpRoute(widget : CategoryPageView());
     Navigator.push(context, route);
   }
 

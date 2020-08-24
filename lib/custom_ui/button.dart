@@ -222,35 +222,31 @@ class DropDownBtnCS extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 60,
-      padding: EdgeInsets.only(left: 10, right: 20),
-      child: redDot(
-        alignmentY: 0.5,
-        child:DropdownButton<String>(
-          isExpanded: true,
-          hint: Text(hint),
-          value: value,
-          icon: Icon(Icons.keyboard_arrow_down),
-          iconSize: 24,
-          elevation: 16,
-          itemHeight: 60,
-          style: TextStyle(color: quickBlack0d),
-          underline: Container(
-            height: 1,
-            color: quickBlack0d,
-          ),
-          onChanged: onChanged,
-          items: itemList
-              .map<DropdownMenuItem<String>>((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Container(
-                width: double.infinity,
-                child: Text(value),
-              ),
-            );
-          }).toList(),
+      height: 50,
+      child: DropdownButton<String>(
+        isExpanded: true,
+        hint: Text(hint),
+        value: value,
+        icon: Icon(Icons.keyboard_arrow_down),
+        iconSize: 24,
+        elevation: 16,
+        itemHeight: 60,
+        style: TextStyle(color: quickBlack0d),
+        underline: Container(
+          height: 1,
+          color: quickBlack0d,
         ),
+        onChanged: onChanged,
+        items: itemList
+            .map<DropdownMenuItem<String>>((String value) {
+          return DropdownMenuItem<String>(
+            value: value,
+            child: Container(
+              width: double.infinity,
+              child: Text(value),
+            ),
+          );
+        }).toList(),
       ),
     );
   }

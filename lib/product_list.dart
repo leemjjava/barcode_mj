@@ -32,6 +32,7 @@ class ProductListState extends State<ProductList>{
 
   FirebaseFirestore firestore;
   List<DocumentSnapshot> _documents;
+  String category;
 
   double inputHeight = 40, inputFontSize = 15;
 
@@ -46,6 +47,7 @@ class ProductListState extends State<ProductList>{
 
     firestore = FirebaseFirestore.instance;
     startTimeStamp = Timestamp.now();
+    category = inputCategoryList[0];
     startGetList();
   }
 
@@ -134,7 +136,6 @@ class ProductListState extends State<ProductList>{
               textColor: Colors.white,
               onRefresh: (){
                 refreshController.requestRefresh(duration: const Duration(milliseconds: 100));
-                refreshList();
               },
             ),
             Expanded(
@@ -271,6 +272,7 @@ class ProductListState extends State<ProductList>{
     _priceCon.text = itemMap[fnPrice];
     _barcodeCon.text = itemMap[fnBarcode];
     _countCon.text = itemMap[fnCount] ?? '';
+    category = itemMap[fnCategory] ?? inputCategoryList[0];
 
     showDialog(
       barrierDismissible: false,
@@ -296,6 +298,17 @@ class ProductListState extends State<ProductList>{
                   SizedBox(height: 10,),
                   alertText('수량', 15),
                   getCountTf(),
+                  SizedBox(height: 10,),
+                  noticeText('카테고리 분류'),
+                  DropDownBtnCS(
+                    value: category,
+                    hint: "분류",
+                    itemList: inputCategoryList,
+                    onChanged: (value){
+                      category = value;
+                      setState(() {});
+                    },
+                  ),
                   SizedBox(height: 10,),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -362,6 +375,7 @@ class ProductListState extends State<ProductList>{
     final price = _priceCon.text;
     final barcode = _barcodeCon.text;
     final count = _countCon.text.isEmpty ? "" : _countCon.text;
+    category = category == inputCategoryList[0] ? null : category;
 
     String message;
     if(barcode.isEmpty) message = "바코드 데이터가 없습니다.";
@@ -378,8 +392,10 @@ class ProductListState extends State<ProductList>{
       fnName: name,
       fnPrice: price,
       fnCount: count,
+      fnCategory: category,
     }).then((value){
       changeLocalItem(index);
+      category = inputCategoryList[0];
     },onError:(error, stacktrace){
       print("$error");
       print(stacktrace.toString());
@@ -457,6 +473,17 @@ class ProductListState extends State<ProductList>{
                   getPriceTf(),
                   SizedBox(height: 10,),
                   getCountTf(),
+                  SizedBox(height: 10,),
+                  noticeText('카테고리 분류'),
+                  DropDownBtnCS(
+                    value: category,
+                    hint: "분류",
+                    itemList: categoryList,
+                    onChanged: (value){
+                      category = value;
+                      setState(() {});
+                    },
+                  ),
                   SizedBox(height: 20,),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -481,10 +508,24 @@ class ProductListState extends State<ProductList>{
     );
   }
 
+  Widget noticeText(String content){
+    return Container(
+      margin: EdgeInsets.only(bottom: 5),
+      child: Text(
+        content,
+        style: TextStyle(
+          color: quickGray7b,
+          fontSize: 12,
+        ),
+      ),
+    );
+  }
+
   void createDoc() {
     final name = _nameCon.text;
     final price = _priceCon.text;
     String count = _countCon.text.isEmpty ? "": _countCon.text;
+    category = category == inputCategoryList[0] ? null : category;
 
     String message;
     if(barcode == null) message = "바코드를 입력하세요.";
@@ -499,9 +540,12 @@ class ProductListState extends State<ProductList>{
       fnPrice: price,
       fnCount: count,
       fnDatetime: Timestamp.now(),
-      fnIsInput: 'N'
+      fnIsInput: 'N',
+      fnCategory: category,
     }).then((value) {
+      textControllerClear();
       barcode = null;
+      category = inputCategoryList[0];
       showReadDocSnackBar('전송완료');
       refreshList();
     }, onError:(error, stacktrace){

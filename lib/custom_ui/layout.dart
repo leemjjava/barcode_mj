@@ -341,7 +341,6 @@ class DetailTitle extends StatelessWidget{
 
 // ignore: must_be_immutable
 class PriceCard extends StatelessWidget{
-
   PriceCard({
     Key key,
     @required this.map,
@@ -387,21 +386,7 @@ class PriceCard extends StatelessWidget{
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              Row(
-                children: [
-                  Expanded(child: titleText(map[fnName])),
-                  InkWellCS(
-                    backgroundColor: Colors.transparent,
-                    child: SizedBox(
-                      width: 50,
-                      height: 50,
-                      child: Icon(Icons.clear),
-                    ),
-                    onTap: onDelete,
-                  ),
-                ],
-              ),
-
+              titleText(map[fnName]),
               Row(
                 children: [
                   Expanded(
@@ -441,9 +426,9 @@ class PriceCard extends StatelessWidget{
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         descriptionWidget('가격', 15),
-        descriptionWidget(price, 25),
+        descriptionWidget(price??'', 25),
         descriptionWidget('바코드', 15),
-        descriptionWidget(barcode, 25),
+        descriptionWidget(barcode??'', 25),
       ],
     );
   }
@@ -477,6 +462,117 @@ class PriceCard extends StatelessWidget{
       content,
       overflow: TextOverflow.ellipsis,
       maxLines: 1,
+      style: TextStyle(
+        fontSize: size,
+        color: quickBlack03,
+      ),
+    );
+  }
+
+}
+
+typedef UpdateCategory = void Function(String title);
+
+// ignore: must_be_immutable
+class CategoryCard extends StatelessWidget{
+  CategoryCard({
+    Key key,
+    @required this.map,
+    @required this.onTap,
+    @required this.updateCategory,
+  }) : super(key:key);
+
+  UpdateCategory updateCategory;
+  Map<String, dynamic> map;
+  GestureTapCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    Timestamp ts = map[fnDatetime];
+    String dt = timestampToStrDateTime(ts);
+
+    return Card(
+      margin: EdgeInsets.all(10),
+      elevation: 2,
+      color: Colors.white,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              titleText(map[fnName]),
+              descriptionWidget(map[fnBarcode], 17),
+              SizedBox(height: 10,),
+              buttonLayout(1),
+              SizedBox(height: 10,),
+              buttonLayout(2),
+              SizedBox(height: 10,),
+              buttonLayout(3),
+              SizedBox(height: 10,),
+              buttonLayout(4),
+              SizedBox(height: 10,),
+              Text(dt,
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buttonLayout(int index){
+    int listCount = (index * 3) - 3;
+    int maxCount = categoryList.length;
+
+    String title01 = listCount < maxCount ? categoryList[listCount]: null;
+    ++listCount;
+    String title02 = listCount < maxCount ? categoryList[listCount]: null;
+    ++listCount;
+    String title03 = listCount < maxCount ? categoryList[listCount]: null;
+
+    return Row(
+      children: <Widget>[
+        title01 != null ? categoryBtn(title01): Expanded(child: Container(),),
+        title02 != null ? categoryBtn(title02): Expanded(child: Container(),),
+        title03 != null ? categoryBtn(title03): Expanded(child: Container(),),
+      ],
+    );
+  }
+
+  Widget categoryBtn(String title){
+    return Expanded(
+      child: BorderBtnCS(
+        title: title ?? '',
+        height: 30,
+        fontWeight: FontWeight.w800,
+        onPressed: ()=>updateCategory(title),
+      ),
+    );
+  }
+
+  Widget titleText(String name){
+    return Container(
+      alignment: Alignment.centerLeft,
+      height: 50,
+      child: Text('$name',
+        overflow: TextOverflow.clip,
+        style: TextStyle(
+          color: Colors.blueGrey,
+          fontSize: 17,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget descriptionWidget(String content, double size){
+    return Text(
+      content,
+      overflow: TextOverflow.clip,
       style: TextStyle(
         fontSize: size,
         color: quickBlack03,
