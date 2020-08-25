@@ -378,13 +378,13 @@ class PriceCard extends StatelessWidget{
         onTap: onTap,
         onLongPress: onLongPress,
         child: Container(
-          height: 200,
           padding: const EdgeInsets.all(8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               titleText(map[fnName]),
+              SizedBox(height: 20,),
               Row(
                 children: [
                   Expanded(
@@ -402,15 +402,20 @@ class PriceCard extends StatelessWidget{
                   ),
                 ],
               ),
+              SizedBox(height: 10,),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    dt,
-                    style:
-                    TextStyle(color: Colors.grey[600]),
+                  Container(
+                    alignment: Alignment.centerLeft,
+                    child: Text(dt,
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
                   ),
-                  countColumn(map[fnCount]),
+                  SizedBox(
+                    width: 50,
+                    child: countColumn(map[fnCount]),
+                  )
                 ],
               ),
             ],
@@ -425,19 +430,18 @@ class PriceCard extends StatelessWidget{
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         descriptionWidget('가격', 15),
-        descriptionWidget(price??'', 25),
+        descriptionWidget(price ??'', 25),
         descriptionWidget('바코드', 15),
-        descriptionWidget(barcode??'', 25),
+        descriptionWidget(barcode ??'', 25),
       ],
     );
   }
 
   Widget countColumn(String count){
-
     return Column(
       children: [
         descriptionWidget('재고', 15),
-        descriptionWidget(count??'입력없음', 15),
+        descriptionWidget(count ??'입력없음', 15),
       ],
     );
   }
@@ -445,8 +449,8 @@ class PriceCard extends StatelessWidget{
   Widget titleText(String name){
     return Container(
       alignment: Alignment.centerLeft,
-      height: 50,
       child: Text('$name',
+        overflow: TextOverflow.clip,
         style: TextStyle(
           color: Colors.blueGrey,
           fontSize: 17,
@@ -458,9 +462,8 @@ class PriceCard extends StatelessWidget{
 
   Widget descriptionWidget(String content, double size){
     return Text(
-      content,
-      overflow: TextOverflow.ellipsis,
-      maxLines: 1,
+      '$content',
+      overflow: TextOverflow.clip,
       style: TextStyle(
         fontSize: size,
         color: quickBlack03,

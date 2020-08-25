@@ -1,7 +1,4 @@
-import 'dart:convert';
 import 'dart:io';
-
-import 'package:barcode_mj/category_list.dart';
 import 'package:barcode_mj/category_page_view.dart';
 import 'package:barcode_mj/product_page_view.dart';
 import 'package:barcode_mj/search_list.dart';
@@ -15,7 +12,6 @@ import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'custom_ui/button.dart';
 import 'custom_ui/text_field.dart';
 
@@ -93,13 +89,6 @@ class HomeState extends State<Home>{
                 ),
                 SizedBox(height: 10,),
                 serviceItem(
-                  icon: Icon(Icons.email, size: 40, color: Colors.green),
-                  title: "엑셀 파일 전송",
-                  content: "현재 서버 데이터를 CSV 파일로 변환하여 메일로 전송합니다.",
-                  onTap: ()=>showFileDialog(),
-                ),
-                SizedBox(height: 10,),
-                serviceItem(
                   icon: Icon(Icons.category, size: 40, color: Colors.pink),
                   title: "카테고리 입력",
                   content: "카테고리를 입력하고 카테고리 별로 목록을 확인합니다.",
@@ -111,6 +100,13 @@ class HomeState extends State<Home>{
                   title: "검색",
                   content: "상품명으로 상품 목록을 검색합니다.",
                   onTap: ()=>searchOnTap(),
+                ),
+                SizedBox(height: 10,),
+                serviceItem(
+                  icon: Icon(Icons.email, size: 40, color: Colors.green),
+                  title: "엑셀 파일 전송",
+                  content: "현재 서버 데이터를 CSV 파일로 변환하여 메일로 전송합니다.",
+                  onTap: ()=>showFileDialog(),
                 ),
                 SizedBox(height: 10,),
               ],

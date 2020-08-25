@@ -134,7 +134,7 @@ class ProductInsertDialogState extends State<ProductInsertDialog>{
     }).then((value) {
       textControllerClear();
       widget.showReadDocSnackBar('전송완료');
-      widget.refreshList();
+      if(widget.refreshList != null) widget.refreshList();
 
       textControllerClear();
       Navigator.pop(context);

@@ -68,8 +68,6 @@ class CategoryPageState extends State<CategoryPage>{
     );
   }
 
-
-
   Widget listView(){
     if(_documents == null){
       return Container(
