@@ -27,4 +27,32 @@ class ProductProvider with ChangeNotifier {
   void cancelDocumentsStream(){
     _subscription.cancel();
   }
+
+  void updateCategoryAll() async{
+    final firebaseDb = FirebaseFirestore.instance;
+
+    final updateDocuments = documents.where((item){
+      if(item.data()[fnCategory] == null) return true;
+      return false;
+    }).toList();
+
+    var batch = firebaseDb.batch();
+
+    int count = 0;
+    for (final doc in updateDocuments) {
+      batch.update(
+        firebaseDb.collection(colName).doc(doc.id),
+        {fnCategory: inputCategoryList[0]},
+      );
+
+      ++count;
+      if (count % 100 == 0) {
+        await batch.commit();
+        batch = firebaseDb.batch();
+      }
+    }
+
+    await batch.commit();
+    print('update Count : $count');
+  }
 }

@@ -7,6 +7,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'bloc/product_bloc.dart';
 import 'custom_ui/alert_dialog.dart';
 
 class CategoryPage extends StatefulWidget{
@@ -22,16 +24,44 @@ class CategoryPage extends StatefulWidget{
 }
 
 class CategoryPageState extends State<CategoryPage>{
+  RefreshController refreshController = RefreshController(initialRefresh: false);
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   FirebaseFirestore firestore;
-  String topTitle;
+
+  final bloc = ProductBloc();
   List<DocumentSnapshot> _documents;
+  Timestamp startTimeStamp;
 
   @override
   void initState() {
     super.initState();
-    topTitle = widget.category;
-    firestore = FirebaseFirestore.instance;
+    startTimeStamp = Timestamp.now();
+    getList();
+  }
+
+  void getList() async{
+    try{
+      List<DocumentSnapshot> documents = await bloc.getCategory(widget.category, startTimeStamp);
+
+      if(_documents == null) _documents = [];
+
+      if( _documents.length == 0) refreshController.refreshCompleted();
+      else refreshController.loadComplete();
+
+      if(documents.isEmpty == false){
+        final lastDocuments = documents[documents.length -1];
+        startTimeStamp = lastDocuments.data()[fnDatetime];
+        _documents.addAll(documents);
+      }
+
+      setState(() {});
+
+    }catch(error, stacktrace){
+      print("$error");
+      print(stacktrace.toString());
+
+      showAlert(context,'$error : ${stacktrace.toString()}');
+    }
   }
 
   @override
@@ -42,30 +72,62 @@ class CategoryPageState extends State<CategoryPage>{
 
   @override
   Widget build(BuildContext context) {
-    final documents = Provider.of<ProductProvider>(context).documents;
-
-    _documents = documents.where((item){
-      if(item.data()[fnCategory] == widget.category) return true;
-      return false;
-    }).toList();
-
     return SafeArea(
       child: Scaffold(
         key: _scaffoldKey,
         body: Column(
           children: [
-            TopBar(
-              title: topTitle,
+            TopRefreshBar(
+              title: widget.category,
               background: quickBlue69,
               textColor: Colors.white,
+              onRefresh: (){
+                refreshController.requestRefresh(duration: const Duration(milliseconds: 100));
+              },
             ),
             Expanded(
-              child: listView(),
+              child: refresher(),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Widget refresher(){
+    return SmartRefresher(
+      enablePullDown: true,
+      enablePullUp: true,
+      header: ClassicHeader(
+        idleText: "당겨서 리프레시",
+        completeText: "완료",
+        refreshingText: "리프레시 중...",
+        releaseText: "새로고침",
+      ),
+      footer: CustomFooter(
+        builder: (BuildContext context,LoadStatus mode){
+          Widget body;
+          if(mode == LoadStatus.idle) body =  Text("마지막", style: TextStyle(color: quickGrayA8),);
+          else if(mode == LoadStatus.loading) body =  CupertinoActivityIndicator();
+
+          return Container(
+            height: 55.0,
+            child: Center(child:body),
+          );
+        },
+      ),
+      controller: refreshController,
+      onRefresh: refreshList,
+      onLoading: ()=>getList(),
+      child: listView(),
+    );
+  }
+
+  refreshList(){
+    startTimeStamp = Timestamp.now();
+    _documents = null;
+    getList();
+    setState(() {});
   }
 
   Widget listView(){
@@ -96,13 +158,12 @@ class CategoryPageState extends State<CategoryPage>{
           return PriceCard(
             map: document.data(),
             onTap: ()=> showUpdateOrDeleteDocDialog(document, index),
-            onCheckTap: ()=> updateIsInput(document, index),
+            onCheckTap: ()=> updateIsInputView(document, index),
             onLongPress: ()=> showProductView(document.id),
           );
         }
     );
   }
-
 
   void showProductView(String docID){
     Route route = createSlideUpRoute(widget : ProductView(docId: docID,));
@@ -117,30 +178,27 @@ class CategoryPageState extends State<CategoryPage>{
         return ProductUpdateDialog(
           showReadDocSnackBar: showReadDocSnackBar,
           doc: doc,
-          changeLocalItem: (isDelete){},
+          changeLocalItem:(isDelete)=>changeLocalItem(index),
         );
       },
     );
   }
 
-  void updateIsInput(DocumentSnapshot document, int index) {
-    final isInput = document.data()[fnIsInput];
-    final inputType = isInput == 'Y' ? 'N' : 'Y';
+  void changeLocalItem(int index) async {
+    final document = _documents[index];
+    _documents.removeAt(index);
 
-    firestore.collection(colName).doc(document.id).update({
-      fnIsInput: inputType,
-    }).then((value){
-
-    },onError:(error, stacktrace){
-      print("$error");
-      print(stacktrace.toString());
-
-      showAlert(context,'$error : ${stacktrace.toString()}');
+    final newDocument = await getDocument(document.id);
+    setState((){
+      if(index == _documents.length -1)_documents.add(newDocument);
+      _documents.insert(index, newDocument);
+      showReadDocSnackBar('${document.data()[fnName]} 수정');
     });
   }
+
   void showDeleteSnackBar(String name){
     setState(() {
-      showReadDocSnackBar('$name 삭제');
+      showReadDocSnackBar('$name 입력 상태 변경');
     });
   }
 
@@ -149,6 +207,32 @@ class CategoryPageState extends State<CategoryPage>{
         .collection(colName)
         .doc(docID)
         .get();
+  }
+
+  void updateIsInputView(DocumentSnapshot document, int index) async{
+    final isInput = document.data()[fnIsInput];
+    final inputType = isInput == 'Y' ? 'N' : 'Y';
+
+    final isSuccess = await updateIsInput(document.id, inputType);
+    if(isSuccess) changeLocalItem(index);
+  }
+
+  Future<bool> updateIsInput(String docId, String inputType) async{
+    try{
+      await firestore
+          .collection(colName)
+          .doc(docId)
+          .update({fnIsInput: inputType});
+
+      return true;
+    }catch(error, stacktrace){
+      print("$error");
+      print(stacktrace.toString());
+
+      showAlert(context,'$error : ${stacktrace.toString()}');
+    }
+
+    return false;
   }
 
   void showReadDocSnackBar(String title) {

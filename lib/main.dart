@@ -41,18 +41,10 @@ class _MyAppState extends State<MyApp> {
         // Initialize FlutterFire
         future: Firebase.initializeApp(),
         builder: (context, snapshot) {
-          // Check for errors
-          if (snapshot.hasError) {
-            return TextPage(title: "문제발생", content: "ERROR");
-          }
 
-          // Once complete, show your application
-          if (snapshot.connectionState == ConnectionState.done) {
-            Provider.of<ProductProvider>(context,listen: false).getProducts();
-            return Home();
-          }
+          if (snapshot.hasError)  return TextPage(title: "문제발생", content: "ERROR");
+          if (snapshot.connectionState == ConnectionState.done)  return Home();
 
-          // Otherwise, show something whilst waiting for initialization to complete
           return Center(
             child: CircularProgressIndicator(
               strokeWidth: 5.0,

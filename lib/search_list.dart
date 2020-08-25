@@ -1,14 +1,11 @@
 import 'dart:async';
 
 import 'package:barcode_mj/product_view.dart';
-import 'package:barcode_mj/provider/product_provider.dart';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:barcode_mj/util/util.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
 import 'custom_ui/alert_dialog.dart';
 import 'custom_ui/layout.dart';
 
@@ -23,7 +20,6 @@ class SearchListState extends State<SearchList>{
   TextEditingController searchTec = TextEditingController();
   String searchKey;
   FirebaseFirestore firestore;
-  Stream<QuerySnapshot> _stream;
   List<QueryDocumentSnapshot> _documents = [];
   StreamSubscription<QuerySnapshot> streamSub;
 
@@ -37,21 +33,8 @@ class SearchListState extends State<SearchList>{
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
-    final documents = Provider.of<ProductProvider>(context).documents;
-
-    _documents = documents.where((item){
-      String name = item.data()[fnName];
-      String searchText = searchTec.text;
-
-      if(searchText.isEmpty) return false;
-      else if(name.contains(searchText)) return true;
-      return false;
-    }).toList();
-
-
 
     return SafeArea(
       child: Scaffold(
@@ -87,8 +70,6 @@ class SearchListState extends State<SearchList>{
       ),
     );
   }
-
-
 
   Widget listView(){
     if(_documents == null){

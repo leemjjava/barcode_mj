@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:barcode_mj/bloc/product_bloc.dart';
 import 'package:barcode_mj/category_page_view.dart';
 import 'package:barcode_mj/product_page_view.dart';
 import 'package:barcode_mj/provider/product_provider.dart';
@@ -97,13 +98,13 @@ class HomeState extends State<Home>{
                   onTap: ()=>categoryOnTap(),
                 ),
                 SizedBox(height: 10,),
-                serviceItem(
-                  icon: Icon(Icons.search, size: 40, color: Colors.orange),
-                  title: "검색",
-                  content: "상품명으로 상품 목록을 검색합니다.",
-                  onTap: ()=>searchOnTap(),
-                ),
-                SizedBox(height: 10,),
+//                serviceItem(
+//                  icon: Icon(Icons.search, size: 40, color: Colors.orange),
+//                  title: "검색",
+//                  content: "상품명으로 상품 목록을 검색합니다.",
+//                  onTap: ()=>searchOnTap(),
+//                ),
+//                SizedBox(height: 10,),
                 serviceItem(
                   icon: Icon(Icons.email, size: 40, color: Colors.green),
                   title: "엑셀 파일 전송",
@@ -294,8 +295,8 @@ class HomeState extends State<Home>{
   }
 
   getCsv() async {
-    final documents = Provider.of<ProductProvider>(context, listen: false).documents;
-    if (documents.isEmpty){
+    final documents = await ProductBloc().getNotInputProduct(Timestamp.now());
+    if (documents == null || documents.isEmpty){
       showReadDocSnackBar("상품이 없습니다.");
       return;
     }

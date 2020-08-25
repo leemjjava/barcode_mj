@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:barcode_mj/bloc/product_bloc.dart';
 import 'package:barcode_mj/product_view.dart';
 import 'package:barcode_mj/provider/product_provider.dart';
 import 'package:barcode_mj/util/resource.dart';
@@ -33,6 +34,7 @@ class ProductListState extends State<ProductList>{
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   String barcode, topTitle;
   Timestamp startTimeStamp;
+  final bloc = ProductBloc();
 
   FirebaseFirestore firestore;
   List<DocumentSnapshot> _documents;
@@ -43,70 +45,41 @@ class ProductListState extends State<ProductList>{
 
     firestore = FirebaseFirestore.instance;
     startTimeStamp = Timestamp.now();
-    startGetList();
+
+    if(widget.type == productListTypeInput) topTitle = '입력 상품';
+    else if(widget.type == productListTypeNotInput) topTitle = '미 입력 상품';
+    else topTitle = '전체 상품';
+
+    getList();
   }
 
-  void startGetList(){
-    Future<QuerySnapshot> snapshotFuture;
-    if(widget.type == productListTypeInput) snapshotFuture = setInputStream();
-    else if(widget.type == productListTypeNotInput) snapshotFuture = setNotInputStream();
-    else snapshotFuture = setAllStream();
+  void getList() async{
+    try{
+      List<DocumentSnapshot> documents;
 
-    snapshotFuture.then((snapshot){
+      if(widget.type == productListTypeInput) documents = await bloc.getInputProduct(startTimeStamp);
+      else if(widget.type == productListTypeNotInput) documents = await bloc.getNotInputProduct(startTimeStamp);
+      else documents = await bloc.getAllProduct(startTimeStamp);
+
       if(_documents == null) _documents = [];
 
       if( _documents.length == 0) refreshController.refreshCompleted();
       else refreshController.loadComplete();
 
-      final documents = snapshot.docs;
-
       if(documents.isEmpty == false){
-        final lastDocuments = documents[snapshot.docs.length -1];
+        final lastDocuments = documents[documents.length -1];
         startTimeStamp = lastDocuments.data()[fnDatetime];
-        _documents.addAll(snapshot.docs);
+        _documents.addAll(documents);
       }
 
       setState(() {});
-    },onError:(error, stacktrace){
+
+    }catch(error, stacktrace){
       print("$error");
       print(stacktrace.toString());
 
       showAlert(context,'$error : ${stacktrace.toString()}');
-    });
-  }
-
-
-
-  Future<QuerySnapshot> setAllStream() {
-    topTitle= "전체 상품 현황";
-    return firestore
-        .collection(colName)
-        .where(fnDatetime, isLessThan: startTimeStamp)
-        .orderBy(fnDatetime, descending: true)
-        .limit(10)
-        .get();
-  }
-
-  Future<QuerySnapshot> setInputStream() async{
-    topTitle= "입력 상품 현황";
-    return await firestore
-        .collection(colName)
-        .where(fnIsInput, isEqualTo: 'Y')
-        .where(fnDatetime, isLessThan: startTimeStamp)
-        .orderBy(fnDatetime, descending: true)
-        .limit(10)
-        .get();
-  }
-
-  Future<QuerySnapshot> setNotInputStream() async{
-    topTitle= "미입력 상품 현황";
-    return await firestore
-        .collection(colName)
-        .where(fnIsInput, isEqualTo: 'N')
-        .where(fnDatetime, isLessThan: startTimeStamp)
-        .orderBy(fnDatetime, descending: true)
-        .limit(10)
-        .get();
+    }
   }
 
   @override
@@ -163,7 +136,7 @@ class ProductListState extends State<ProductList>{
       ),
       controller: refreshController,
       onRefresh: refreshList,
-      onLoading: ()=>startGetList(),
+      onLoading: ()=>getList(),
       child: listView(),
     );
   }
@@ -171,7 +144,7 @@ class ProductListState extends State<ProductList>{
   refreshList(){
     startTimeStamp = Timestamp.now();
     _documents = null;
-    startGetList();
+    getList();
     setState(() {});
   }
 
