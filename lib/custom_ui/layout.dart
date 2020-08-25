@@ -345,13 +345,15 @@ class PriceCard extends StatelessWidget{
     Key key,
     @required this.map,
     @required this.onTap,
-    @required this.onCheckTap,
     @required this.onLongPress,
+    this.onCheckTap,
+    this.onCheckLongPress,
   }) : super(key:key);
 
   Map<String, dynamic> map;
   GestureTapCallback onTap;
   GestureTapCallback onCheckTap;
+  GestureTapCallback onCheckLongPress;
   GestureLongPressCallback onLongPress;
 
   @override
@@ -399,6 +401,7 @@ class PriceCard extends StatelessWidget{
                       child: checkIcon,
                     ),
                     onTap: onCheckTap,
+                    onLongPress: onCheckLongPress,
                   ),
                 ],
               ),
@@ -515,6 +518,10 @@ class CategoryCard extends StatelessWidget{
               buttonLayout(3),
               SizedBox(height: 10,),
               buttonLayout(4),
+              SizedBox(height: 10,),
+              buttonLayout(5),
+              SizedBox(height: 10,),
+              buttonLayout(6),
               SizedBox(height: 10,),
               Text(dt,
                 style: TextStyle(color: Colors.grey[600]),

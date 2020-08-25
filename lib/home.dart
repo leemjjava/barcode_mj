@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:barcode_mj/category_page_view.dart';
 import 'package:barcode_mj/product_page_view.dart';
+import 'package:barcode_mj/provider/product_provider.dart';
 import 'package:barcode_mj/search_list.dart';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:barcode_mj/util/util.dart';
@@ -11,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'custom_ui/button.dart';
 import 'custom_ui/text_field.dart';
@@ -292,16 +294,26 @@ class HomeState extends State<Home>{
   }
 
   getCsv() async {
-    var cloud = await getAllProduct();
-    if (cloud.docs.isEmpty){
+    final documents = Provider.of<ProductProvider>(context, listen: false).documents;
+    if (documents.isEmpty){
       showReadDocSnackBar("상품이 없습니다.");
       return;
     }
 
+    final notInputDocs = documents.where((item){
+      return item.data()[fnIsInput] != 'Y';
+    }).toList();
+
+    if (notInputDocs.isEmpty){
+      showReadDocSnackBar("입력할 상품이 없습니다.");
+      return;
+    }
+
+
     List<List<dynamic>> rows = [];
     rows.add(["바코드", "상품명", "가격", "재고",]);
 
-    for (final document in cloud.docs) {
+    for (final document in notInputDocs) {
       List<dynamic> row = [];
 
       row.add(document.data()[fnBarcode]);

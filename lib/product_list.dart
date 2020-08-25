@@ -1,12 +1,15 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:barcode_mj/product_view.dart';
+import 'package:barcode_mj/provider/product_provider.dart';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:barcode_mj/util/util.dart';
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:progress_dialog/progress_dialog.dart';
+import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'custom_ui/alert_dialog.dart';
 import 'custom_ui/button.dart';
@@ -33,7 +36,7 @@ class ProductListState extends State<ProductList>{
 
   FirebaseFirestore firestore;
   List<DocumentSnapshot> _documents;
-
+  ProgressDialog _progressDialog;
   @override
   void initState() {
     super.initState();
@@ -200,8 +203,17 @@ class ProductListState extends State<ProductList>{
         return PriceCard(
           map: document.data(),
           onTap: ()=> showUpdateOrDeleteDocDialog(document, index),
-          onCheckTap: ()=> updateIsInput(document, index),
           onLongPress: ()=> showProductView(document.id),
+          onCheckTap: ()=> updateIsInputView(document, index),
+          onCheckLongPress: (){
+            if(document.data()[fnIsInput] == 'Y') return;
+
+            showAlertDialog(
+              context: context,
+              message: '''선택한 상품보다 이전에 입력된 상품 중 "포스기 미 입력" 상태인 경우 모두 "포스기 입력" 상태로 바꿉니다.\n\n진행하시겠습니까?''',
+              okPressed: ()=>updateIsInputLessAll(document),
+            );
+          },
         );
       },
     );
@@ -301,20 +313,80 @@ class ProductListState extends State<ProductList>{
         .get();
   }
 
-  void updateIsInput(DocumentSnapshot document, int index) {
+  void updateIsInputView(DocumentSnapshot document, int index) async{
     final isInput = document.data()[fnIsInput];
     final inputType = isInput == 'Y' ? 'N' : 'Y';
 
-    firestore.collection(colName).doc(document.id).update({
-      fnIsInput: inputType,
-    }).then((value){
+    final isSuccess = await updateIsInput(document.id, inputType);
+
+    if(isSuccess){
       final isTypeAll = widget.type != productListTypeAll;
       changeLocalItem(index, isDelete: isTypeAll);
-    },onError:(error, stacktrace){
+    }
+  }
+
+  Future<bool> updateIsInput(String docId, String inputType) async{
+    try{
+      await firestore
+          .collection(colName)
+          .doc(docId)
+          .update({fnIsInput: inputType});
+
+      return true;
+    }catch(error, stacktrace){
       print("$error");
       print(stacktrace.toString());
 
       showAlert(context,'$error : ${stacktrace.toString()}');
+    }
+
+    return false;
+  }
+
+  void updateIsInputLessAll(DocumentSnapshot document) {
+    final nowIsInput = document.data()[fnIsInput];
+    final inputType = nowIsInput == 'Y' ? 'N' : 'Y';
+    final dateTime = document.data()[fnDatetime];
+
+    _progressDialog = getProgressDialog(context, '입력 변경 중');
+    _progressDialog.show();
+
+    final getFuture = firestore
+        .collection(colName)
+        .where(fnDatetime, isLessThanOrEqualTo: dateTime)
+        .where(fnIsInput, isEqualTo: nowIsInput)
+        .orderBy(fnDatetime, descending: true)
+        .get();
+
+    getFuture.then((snapshot) async {
+      final documents = snapshot.docs;
+
+      var batch = firestore.batch();
+
+      int count = 0;
+      for (final doc in documents) {
+        batch.update(
+          firestore.collection(colName).doc(doc.id),
+          {fnIsInput: inputType},
+        );
+
+        ++count;
+        if (count % 100 == 0) {
+          await batch.commit();
+          batch = firestore.batch();
+        }
+      }
+
+      await batch.commit();
+      _progressDialog.dismiss();
+      showReadDocSnackBar('입력 변경 완료');
+      refreshList();
+    }, onError: (error, stacktrace) {
+      _progressDialog.dismiss();
+      print("$error");
+      print(stacktrace.toString());
+
+      showAlert(context, '$error : ${stacktrace.toString()}');
     });
   }
 

@@ -181,12 +181,14 @@ class InkWellCS extends StatelessWidget{
     Key key,
     this.child,
     this.onTap,
+    this.onLongPress,
     this.backgroundColor = Colors.white,
     this.splashColor,
   }):super(key:key);
 
   final Widget child;
   GestureTapCallback onTap;
+  GestureTapCallback onLongPress;
   Color splashColor;
   Color backgroundColor;
 
@@ -198,6 +200,7 @@ class InkWellCS extends StatelessWidget{
         splashColor: splashColor,
         child: child,
         onTap: onTap,
+        onLongPress: onLongPress,
       ),
     );
   }

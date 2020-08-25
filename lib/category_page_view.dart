@@ -23,7 +23,7 @@ class CategoryPageViewState extends State<CategoryPageView>{
     final pageList = categoryList.map((category)=>CategoryPage(category:category)).toList();
     widgetList.addAll(pageList);
 
-    int firstViewOffset = 2;
+    int firstViewOffset = 4;
 
     _pageController = PageController(initialPage: firstViewOffset + 999);
   }
