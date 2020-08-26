@@ -295,7 +295,7 @@ class HomeState extends State<Home>{
   }
 
   getCsv() async {
-    final documents = await ProductBloc().getNotInputProduct(Timestamp.now());
+    final documents = await ProductBloc().getCsvProduct();
     if (documents == null || documents.isEmpty){
       showReadDocSnackBar("상품이 없습니다.");
       return;

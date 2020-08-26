@@ -54,4 +54,14 @@ class ProductBloc{
 
     return snapshot.docs;
   }
+
+  Future<List<DocumentSnapshot>> getCsvProduct() async{
+    QuerySnapshot snapshot = await _firestore
+        .collection(colName)
+        .where(fnIsInput, isEqualTo: 'N')
+        .orderBy(fnDatetime, descending: true)
+        .get();
+
+    return snapshot.docs;
+  }
 }
