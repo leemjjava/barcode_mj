@@ -64,4 +64,15 @@ class ProductBloc{
 
     return snapshot.docs;
   }
+
+  Future<List<DocumentSnapshot>> getSearch(String keyword) async{
+    QuerySnapshot snapshot = await _firestore
+        .collection(colName)
+        .where(fnName, isGreaterThanOrEqualTo: keyword)
+        .orderBy(fnDatetime, descending: true)
+        .limit(10)
+        .get();
+
+    return snapshot.docs;
+  }
 }

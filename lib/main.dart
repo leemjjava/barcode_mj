@@ -1,3 +1,4 @@
+import 'package:barcode_mj/db/db_helper.dart';
 import 'package:barcode_mj/home.dart';
 import 'package:barcode_mj/provider/product_provider.dart';
 import 'package:barcode_mj/util/resource.dart';
@@ -5,6 +6,7 @@ import 'package:barcode_mj/util/util.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'bloc/assets_csv_bloc.dart';
 import 'custom_ui/layout.dart';
 
 void main() {
@@ -25,10 +27,44 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String barcode = "";
+  bool isInitComplete;
 
   @override
   initState() {
     super.initState();
+    initFirebase();
+  }
+
+  initFirebase() async{
+    try{
+      await Firebase.initializeApp();
+      initDb();
+    }catch(error, stacktrace) {
+      print("$error");
+      print(stacktrace.toString());
+
+      showAlert(context, '$error : ${stacktrace.toString()}');
+    }
+  }
+
+  initDb()async{
+    try{
+      final db = DBHelper();
+      final products = await db.selectAllProduct();
+
+      if(products.isEmpty) await AssetsCsvBloc().loadCSV();
+      setComplete();
+    }catch(error, stacktrace) {
+      print("$error");
+      print(stacktrace.toString());
+
+      showAlert(context, '$error : ${stacktrace.toString()}');
+    }
+  }
+
+  setComplete(){
+    isInitComplete = true;
+    setState(() {});
   }
 
   @override
@@ -37,23 +73,37 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home:FutureBuilder(
-        // Initialize FlutterFire
-        future: Firebase.initializeApp(),
-        builder: (context, snapshot) {
+      home: getHome(),
+    );
+  }
 
-          if (snapshot.hasError)  return TextPage(title: "문제발생", content: "ERROR");
-          if (snapshot.connectionState == ConnectionState.done)  return Home();
-
-          return Center(
-            child: CircularProgressIndicator(
-              strokeWidth: 5.0,
-            )
-          );
-        },
+  getHome(){
+    if(isInitComplete == true) return Home();
+    return SafeArea(
+      child: Scaffold(
+        body: Center(
+          child:Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('데이터 저장 중 종료하지 마세요.',
+                overflow: TextOverflow.clip,
+                style: TextStyle(fontSize: 20),
+              ),
+              SizedBox(height: 30,),
+              Container(
+                alignment: Alignment.center,
+                padding: EdgeInsets.all(100),
+                child: LinearProgressIndicator(
+                  minHeight: 5,
+                ),
+              )
+            ],
+          )
+        ),
       ),
     );
   }
+
 }
 
 class TextPage extends StatelessWidget{

@@ -1,22 +1,31 @@
+import 'dart:convert';
 import 'dart:io';
+import 'package:barcode_mj/bloc/assets_csv_bloc.dart';
 import 'package:barcode_mj/bloc/product_bloc.dart';
 import 'package:barcode_mj/category_page_view.dart';
+import 'package:barcode_mj/db/db_helper.dart';
 import 'package:barcode_mj/product_page_view.dart';
-import 'package:barcode_mj/provider/product_provider.dart';
 import 'package:barcode_mj/search_list.dart';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:barcode_mj/util/util.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:csv/csv.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:provider/provider.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'custom_ui/button.dart';
 import 'custom_ui/text_field.dart';
+
+Future<String> getLongCsv(List<List<dynamic>> rows){
+  return Future((){
+    return const ListToCsvConverter().convert(rows);
+  });
+}
 
 class Home extends StatefulWidget{
   @override
@@ -26,6 +35,8 @@ class Home extends StatefulWidget{
 class HomeState extends State<Home>{
   TextEditingController _fileNameCon = TextEditingController();
   TextEditingController _emailCon = TextEditingController();
+
+  ProgressDialog _progressDialog;
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   String filePath, fileName;
   SharedPreferences prefs;
@@ -98,13 +109,13 @@ class HomeState extends State<Home>{
                   onTap: ()=>categoryOnTap(),
                 ),
                 SizedBox(height: 10,),
-//                serviceItem(
-//                  icon: Icon(Icons.search, size: 40, color: Colors.orange),
-//                  title: "검색",
-//                  content: "상품명으로 상품 목록을 검색합니다.",
-//                  onTap: ()=>searchOnTap(),
-//                ),
-//                SizedBox(height: 10,),
+                serviceItem(
+                  icon: Icon(Icons.data_usage, size: 40, color: Colors.orange),
+                  title: "로컬 엑셀 파일 전송",
+                  content: "로컬 엑셀 파일 전송",
+                  onTap: ()=>showFileDialog(isLocal: true),
+                ),
+                SizedBox(height: 10,),
                 serviceItem(
                   icon: Icon(Icons.email, size: 40, color: Colors.green),
                   title: "엑셀 파일 전송",
@@ -127,11 +138,6 @@ class HomeState extends State<Home>{
 
   void categoryOnTap(){
     Route route = createSlideUpRoute(widget : CategoryPageView());
-    Navigator.push(context, route);
-  }
-
-  void searchOnTap(){
-    Route route = createSlideUpRoute(widget : SearchList());
     Navigator.push(context, route);
   }
 
@@ -200,7 +206,7 @@ class HomeState extends State<Home>{
     );
   }
 
-  void showFileDialog(){
+  void showFileDialog({bool isLocal}){
     _emailCon.text = prefs.get('EMAIL');
 
     showDialog(
@@ -239,8 +245,14 @@ class HomeState extends State<Home>{
 
                           fileName = '${_fileNameCon.text}_$formattedDate';
 
-                          getCsv();
-                          Navigator.pop(context);
+                          if(isLocal == true){
+                            _progressDialog = getProgressDialog(context, 'Local DB CSV 파일로 만드는 중...');
+                            _progressDialog.show();
+                            getLocalCsv();
+                          } else{
+                            getCsv();
+                            Navigator.pop(context);
+                          }
                         }),
                       ],
                     ),
@@ -330,6 +342,42 @@ class HomeState extends State<Home>{
     file.writeAsString(csv);
 
     sendMailAndAttachment();
+  }
+
+  getLocalCsv() async {
+    final documents = await DBHelper().selectAllProduct();
+    print('documents count: ${documents.length}');
+    if (documents == null || documents.isEmpty){
+      showReadDocSnackBar("상품이 없습니다.");
+      return;
+    }
+
+    List<List<dynamic>> rows = [];
+    rows.add(["대분류명", "중분류명", "상품명", "바코드","판매금액","부가세타입","매입금액"]);
+
+    for (final document in documents) {
+      List<dynamic> row = [];
+
+      row.add(document[icCategory01]);
+      row.add(document[icCategory02]);
+      row.add(document[icName]);
+      row.add(document[icBarcode]);
+      row.add(document[icPrice]);
+      row.add(document[icTexType]);
+      row.add(document[icBayPrice]);
+
+      rows.add(row);
+    }
+
+    print('rows count: ${rows.length}');
+
+    File file = await _localFile;
+    String csv = await compute(getLongCsv,rows);
+    file.writeAsString(csv);
+
+    sendMailAndAttachment();
+    _progressDialog.dismiss();
+    Navigator.pop(context);
   }
 
   Future<QuerySnapshot> getAllProduct() {
