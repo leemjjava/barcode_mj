@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:barcode_mj/bloc/assets_csv_bloc.dart';
+import 'package:barcode_mj/bloc/csv_bloc.dart';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -116,7 +116,6 @@ class DBHelper {
 
     return await db.transaction<int>((txn)async {
       int count = -1;
-      productDeleteAll(transaction: txn);
       for(final document in documentList){
         count = await insertServerProduct(item: document, transaction: txn);
       }
@@ -149,7 +148,7 @@ class DBHelper {
     int timeStamp = DateTime.now().millisecondsSinceEpoch;
 
     List<dynamic> arguments = [
-      '미분류', '', name, barcode, price, '포함', '', count, timeStamp
+      '미분류', '', name, barcode, price, '', '', count, timeStamp
     ];
 
     if(transaction != null) return transaction.rawInsert(sql,arguments);
@@ -177,6 +176,29 @@ class DBHelper {
     );
 
     return res;
+  }
+
+  Future<Map> selectLastProduct() async{
+    final db = await database;
+    List<Map> res = await db.query(
+        productTable,
+        columns: [
+          icCategory01,
+          icCategory02,
+          icName,
+          icBarcode,
+          icPrice,
+          icTexType,
+          icBayPrice,
+          icCount,
+          icDate
+        ],
+        orderBy: '$icDate DESC',
+        limit: 1,
+    );
+
+    if(res == null) return null;
+    return res[0];
   }
 
   Future<List<Map>> selectByBarcode(String barcode) async{

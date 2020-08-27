@@ -79,7 +79,7 @@ class CategoryPageState extends State<CategoryPage>{
           children: [
             TopRefreshBar(
               title: widget.category,
-              background: quickBlue69,
+              background: quickYellowFB,
               textColor: Colors.white,
               onRefresh: (){
                 refreshController.requestRefresh(duration: const Duration(milliseconds: 100));

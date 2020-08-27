@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:barcode_mj/bloc/assets_csv_bloc.dart';
+import 'package:barcode_mj/bloc/csv_bloc.dart';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:barcode_mj/util/util.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -829,5 +829,89 @@ class LocalPriceCard extends StatelessWidget{
       ),
     );
   }
+}
 
+// ignore: must_be_immutable
+class ShadowBox extends StatelessWidget{
+  ShadowBox({
+    Key key,
+    this.icon,
+    this.title,
+    this.content,
+    this.onTap
+  }) :super(key : key);
+
+  final Icon icon;
+  final String title;
+  final String content;
+  GestureTapCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 100,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.all(
+            Radius.circular(15),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey[500],
+              offset: Offset(4.0, 4.0),
+              blurRadius: 10.0,
+              spreadRadius: 1.0,
+            ),
+            BoxShadow(
+              color: Colors.white,
+              offset: Offset(-4.0, -4.0),
+              blurRadius: 10.0,
+              spreadRadius: 1.0,
+            ),
+          ],
+        ),
+        child: InkWellCS(
+          backgroundColor: Colors.transparent,
+          onTap: onTap,
+          child: Container(
+            padding: EdgeInsets.only(left: 30),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                icon,
+                SizedBox(width: 40,),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text(
+                      title,
+                      style: TextStyle(
+                          fontSize: 18,
+                          color: quickBlack2C,
+                          fontWeight: FontWeight.w700
+                      ),
+                    ),
+                    SizedBox(height: 9,),
+                    SizedBox(
+                      width: 180,
+                      child: Text(
+                        content,
+                        overflow: TextOverflow.clip,
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: quickGrayA0
+                        ),
+                      ),
+                    )
+                  ],
+                )
+              ],
+            )
+          ),
+        ),
+      ),
+    );
+  }
 }

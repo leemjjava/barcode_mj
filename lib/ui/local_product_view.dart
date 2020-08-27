@@ -1,4 +1,4 @@
-import 'package:barcode_mj/bloc/assets_csv_bloc.dart';
+import 'package:barcode_mj/bloc/csv_bloc.dart';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:barcode_mj/util/util.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

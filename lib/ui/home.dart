@@ -1,30 +1,12 @@
-import 'dart:io';
-import 'package:barcode_mj/bloc/assets_csv_bloc.dart';
-import 'package:barcode_mj/bloc/product_bloc.dart';
+import 'package:barcode_mj/custom_ui/layout.dart';
 import 'package:barcode_mj/ui/category_page_view.dart';
-import 'package:barcode_mj/db/db_helper.dart';
 import 'package:barcode_mj/ui/product_page_view.dart';
 import 'package:barcode_mj/ui/search_list.dart';
+import 'package:barcode_mj/ui/send_csv_view.dart';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:barcode_mj/util/util.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:csv/csv.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_email_sender/flutter_email_sender.dart';
-import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:progress_dialog/progress_dialog.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../custom_ui/button.dart';
-import '../custom_ui/text_field.dart';
-
-Future<String> getLongCsv(List<List<dynamic>> rows){
-  return Future((){
-    return const ListToCsvConverter().convert(rows);
-  });
-}
 
 class Home extends StatefulWidget{
   @override
@@ -32,31 +14,7 @@ class Home extends StatefulWidget{
 }
 
 class HomeState extends State<Home>{
-  TextEditingController _fileNameCon = TextEditingController();
-  TextEditingController _emailCon = TextEditingController();
-
-  ProgressDialog _progressDialog;
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-  String filePath, fileName;
-  SharedPreferences prefs;
-
-  @override
-  void initState() {
-    super.initState();
-    getEmail();
-  }
-
-  void getEmail() async{
-    prefs = await SharedPreferences.getInstance();
-  }
-
-  @override
-  void dispose() {
-    _fileNameCon.dispose();
-    _emailCon.dispose();
-
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,42 +36,42 @@ class HomeState extends State<Home>{
                       fontWeight: FontWeight.w700
                   ),
                 ),
-                SizedBox(height: 25,),
-                serviceItem(
+                SizedBox(height: 30,),
+                ShadowBox(
                   icon: Icon(Icons.assignment_late, size: 40, color: Colors.red,),
                   title: "미입력 상품",
                   content: "포스기에 미등록된 상품 리스트",
                   onTap: ()=>serviceItemOnTap(productListTypeNotInput),
                 ),
-                SizedBox(height: 10,),
-                serviceItem(
+                SizedBox(height: 15,),
+                ShadowBox(
                   icon: Icon(Icons.assignment, size: 40, color: Colors.blue),
                   title: "입력 상품",
                   content: "포스기에 등록된 상품 리스트",
                   onTap: ()=>serviceItemOnTap(productListTypeInput),
                 ),
-                SizedBox(height: 10,),
-                serviceItem(
-                  icon: Icon(Icons.category, size: 40, color: Colors.pink),
+                SizedBox(height: 15,),
+                ShadowBox(
+                  icon: Icon(Icons.category, size: 40, color: quickYellowFB),
                   title: "카테고리 입력",
                   content: "카테고리를 입력하고 카테고리 별로 목록을 확인합니다.",
                   onTap: ()=>categoryOnTap(),
                 ),
-                SizedBox(height: 10,),
-                serviceItem(
+                SizedBox(height: 15,),
+                ShadowBox(
                   icon: Icon(Icons.search, size: 40, color: Colors.orange),
                   title: "포스기 상품 검색",
-                  content: "포스기에 등록되어 있는 상품을 검색합니다.",
+                  content: "포스기에 등록되어 있는 상품 검색합니다.",
                   onTap: ()=>searchOnTap(),
                 ),
-                SizedBox(height: 10,),
-                serviceItem(
+                SizedBox(height: 15,),
+                ShadowBox(
                   icon: Icon(Icons.email, size: 40, color: Colors.green),
                   title: "엑셀 파일 전송",
-                  content: "현재 서버 데이터와 포스기 등록 데이터를 중복 제거하여 메일로 전송합니다.",
-                  onTap: ()=>showFileDialog(),
+                  content: "모든 상품 데이터 파일을 메일로 전송합니다.",
+                  onTap: ()=>sendCsvOnTap(),
                 ),
-                SizedBox(height: 10,),
+                SizedBox(height: 30,),
               ],
             ),
           )
@@ -137,259 +95,8 @@ class HomeState extends State<Home>{
     Navigator.push(context, route);
   }
 
-  Widget serviceItem({
-    @required Icon icon,
-    @required String title,
-    @required String content,
-    GestureTapCallback onTap
-  }){
-
-    return SizedBox(
-      height: 94,
-      child: Container(
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: quickGrayEd,
-              spreadRadius: 1,
-              blurRadius: 7,
-              offset: Offset(0, 0), // changes position of shadow
-            ),
-          ],
-          borderRadius: BorderRadius.all(Radius.circular(3)),
-        ),
-        child: InkWellCS(
-          backgroundColor: Colors.white,
-          onTap: onTap,
-          child: Container(
-            padding: EdgeInsets.only(left: 30),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                icon,
-                SizedBox(width: 40,),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Text(
-                      title,
-                      style: TextStyle(
-                          fontSize: 18,
-                          color: quickBlack2C,
-                          fontWeight: FontWeight.w700
-                      ),
-                    ),
-                    SizedBox(height: 9,),
-                    SizedBox(
-                      width: 180,
-                      child: Text(
-                        content,
-                        overflow: TextOverflow.clip,
-                        style: TextStyle(
-                            fontSize: 14,
-                            color: quickGrayA0
-                        ),
-                      ),
-                    )
-                  ],
-                )
-              ],
-            )
-          ),
-        ),
-      ),
-    );
-  }
-
-  void showFileDialog({bool isLocal}){
-    _emailCon.text = prefs.get('EMAIL');
-
-    showDialog(
-      barrierDismissible: false,
-      context: context,
-      builder: (context){
-        return AlertDialog(
-          contentPadding: EdgeInsets.only(left: 15, right: 15, top: 15, bottom: 5),
-          content: Container(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: <Widget>[
-                    alertText('파일 전송', 20),
-                    SizedBox(height: 20,),
-                    getFileNameTf(),
-                    SizedBox(height: 20,),
-                    getEmailTf(),
-                    SizedBox(height: 20,),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        alertBtn('취소', () {
-                          Navigator.pop(context);
-                        }),
-                        alertBtn('생성', () {
-                          if(_fileNameCon.text.isEmpty){
-                            showReadDocSnackBar('파일 이름을 입력해주세요.');
-                            return;
-                          }
-                          if(_emailCon.text.isEmpty){
-                            showReadDocSnackBar('이메일을 입력해주세요.');
-                            return;
-                          }
-                          DateTime now = DateTime.now();
-                          String formattedDate = DateFormat('hh_mm').format(now);
-
-                          fileName = '${_fileNameCon.text}_$formattedDate';
-
-                          _progressDialog = getProgressDialog(context, 'Local DB CSV 파일로 만드는 중...');
-                          _progressDialog.show();
-                          getLocalCsv();
-                        }),
-                      ],
-                    ),
-                  ],
-                ),
-              )
-          ),
-        );
-      },
-    );
-  }
-
-  Widget getFileNameTf(){
-    return UnderLineTfCS(
-      controller: _fileNameCon,
-      textColor: quickBlack00,
-      underLineColor: quickBlack0d,
-      cursorColor: quickBlack0d,
-      hint: '파일명',
-      height: 40,
-      width: 1.0,
-      fontSize: 15,
-    );
-  }
-
-  Widget getEmailTf(){
-    return UnderLineTfCS(
-      controller: _emailCon,
-      textColor: quickBlack00,
-      underLineColor: quickBlack0d,
-      cursorColor: quickBlack0d,
-      hint: 'email',
-      height: 40,
-      width: 1.0,
-      fontSize: 15,
-    );
-  }
-
-  Future<String> get _localPath async {
-    final directory = await getExternalStorageDirectory();
-    return directory.absolute.path;
-  }
-
-  Future<File> get _localFile async {
-    final path = await _localPath;
-
-    final checkDirectory = await Directory('$path/barcode_mj').exists();
-    if(checkDirectory == false) await Directory('$path/barcode_mj').create();
-    filePath = '$path/barcode_mj/$fileName.csv';
-    print(filePath);
-    return File('$path/barcode_mj/$fileName.csv').create();
-  }
-
-  Future<bool> addServerData() async {
-    final bloc = ProductBloc();
-
-    final documents = await bloc.getCsvProduct();
-    if (documents == null || documents.isEmpty){
-      showReadDocSnackBar("상품이 없습니다.");
-      return false;
-    }
-
-    List<Map<String, dynamic>> documentList = [];
-
-    for (final document in documents) {
-      documentList.add(document.data());
-    }
-
-    await DBHelper().insertServerProductAll(documentList);
-    await bloc.updateIsInputAll(documents);
-
-    return true;
-  }
-
-  getLocalCsv() async {
-    final isOk = await addServerData();
-    if(isOk == false){
-      _progressDialog.dismiss();
-      return;
-    }
-
-    final documents = await DBHelper().selectAllProduct();
-    print('documents count: ${documents.length}');
-    if (documents == null || documents.isEmpty){
-      showReadDocSnackBar("상품이 없습니다.");
-      return;
-    }
-
-    List<List<dynamic>> rows = [];
-    rows.add(["대분류명", "중분류명", "상품명", "바코드", "판매금액", "부가세타입", "매입금액", "재고"]);
-
-    for (final document in documents) {
-      List<dynamic> row = [];
-
-      row.add(document[icCategory01]);
-      row.add(document[icCategory02]);
-      row.add(document[icName]);
-      row.add(document[icBarcode]);
-      row.add(document[icPrice]);
-      row.add(document[icTexType]);
-      row.add(document[icBayPrice]);
-      row.add(document[icCount]);
-
-      rows.add(row);
-    }
-
-    print('rows count: ${rows.length}');
-
-    File file = await _localFile;
-    String csv = await compute(getLongCsv,rows);
-    file.writeAsString(csv);
-
-    sendMailAndAttachment();
-    _progressDialog.dismiss();
-    Navigator.pop(context);
-  }
-
-  void showReadDocSnackBar(String title) {
-    _scaffoldKey.currentState
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.deepOrangeAccent,
-          duration: Duration(seconds: 5),
-          content: Text(title),
-          action: SnackBarAction(
-            label: "Done",
-            textColor: Colors.white,
-            onPressed: () {},
-          ),
-        ),
-      );
-  }
-
-  sendMailAndAttachment() async {
-    final emailAddress = _emailCon.text;
-    prefs.setString('EMAIL', emailAddress);
-
-    final Email email = Email(
-      body: '상품 목록 CSV 파일 전',
-      subject: '전송 시간 ${DateTime.now().toString()}',
-      recipients: [_emailCon.text],
-      isHTML: true,
-      attachmentPaths: [filePath],
-    );
-
-    await FlutterEmailSender.send(email);
+  void sendCsvOnTap(){
+    Route route = createSlideUpRoute(widget : SendCsvView());
+    Navigator.push(context, route);
   }
 }

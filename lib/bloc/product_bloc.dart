@@ -31,6 +31,17 @@ class ProductBloc{
     return snapshot.docs;
   }
 
+  Future<List<DocumentSnapshot>> getInputProductAll(dynamic startTimeStamp) async{
+    QuerySnapshot snapshot = await _firestore
+        .collection(colName)
+        .where(fnIsInput, isEqualTo: 'Y')
+        .where(fnDatetime, isGreaterThan: startTimeStamp)
+        .orderBy(fnDatetime, descending: false)
+        .get();
+
+    return snapshot.docs;
+  }
+
   Future<List<DocumentSnapshot>> getNotInputProduct(dynamic startTimeStamp) async{
     QuerySnapshot snapshot = await _firestore
         .collection(colName)
@@ -55,6 +66,23 @@ class ProductBloc{
     return snapshot.docs;
   }
 
+  Future<DocumentSnapshot> getDocument(String docID) {
+    return _firestore
+        .collection(colName)
+        .doc(docID)
+        .get();
+  }
+
+  Future<List<DocumentSnapshot>> getDocumentByBarcode(String barcode) async{
+    QuerySnapshot snapshot = await _firestore
+        .collection(colName)
+        .where(fnBarcode, isEqualTo: barcode)
+        .limit(1)
+        .get();
+
+    return snapshot.docs;
+  }
+
   Future<List<DocumentSnapshot>> getCsvProduct() async{
     QuerySnapshot snapshot = await _firestore
         .collection(colName)
@@ -64,7 +92,6 @@ class ProductBloc{
 
     return snapshot.docs;
   }
-
 
 
   Future<List<DocumentSnapshot>> getSearch(String keyword) async{

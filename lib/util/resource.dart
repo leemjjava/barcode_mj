@@ -44,7 +44,9 @@ const Color quickWhiteF1 = Color(0xFFF1F1F1);
 const Color quickSkyBC = Color(0xFFBCE8FF);
 const Color quickSky63 = Color(0xFF63DBF4);
 
-const Color quickYellowFF = Color(0xFFFFC316);
+const Color quickYellowFC = Color(0xFFFFC316);
+const Color quickYellowFB = Color(0xFFFFBB00);
+const Color quickYellowCC = Color(0xFFCCA63D);
 
 const Color quickRedFF = Color(0xFFFF1D1D);
 

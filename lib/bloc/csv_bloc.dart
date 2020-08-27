@@ -1,3 +1,4 @@
+import 'package:barcode_mj/bloc/product_bloc.dart';
 import 'package:barcode_mj/db/db_helper.dart';
 import 'package:flutter/services.dart';
 
@@ -11,7 +12,7 @@ const icBayPrice = 'bay_price';
 const icCount = 'count';
 const icDate = 'date';
 
-class AssetsCsvBloc{
+class CsvBloc{
   Future<String> loadAsset(String path) async {
     return await rootBundle.loadString(path);
   }

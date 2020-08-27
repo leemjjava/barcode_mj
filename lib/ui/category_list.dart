@@ -72,7 +72,7 @@ class CategoryListState extends State<CategoryList>{
           children: [
             TopRefreshBar(
               title: topTitle,
-              background: quickBlue69,
+              background: quickYellowFB,
               textColor: Colors.white,
               onRefresh: (){
                 refreshController.requestRefresh(duration: const Duration(milliseconds: 100));

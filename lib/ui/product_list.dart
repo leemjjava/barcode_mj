@@ -33,6 +33,7 @@ class ProductListState extends State<ProductList>{
   RefreshController refreshController = RefreshController(initialRefresh: false);
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   String barcode, topTitle;
+  Color topBarColor;
   Timestamp startTimeStamp;
   final bloc = ProductBloc();
 
@@ -46,9 +47,16 @@ class ProductListState extends State<ProductList>{
     firestore = FirebaseFirestore.instance;
     startTimeStamp = Timestamp.now();
 
-    if(widget.type == productListTypeInput) topTitle = '입력 상품';
-    else if(widget.type == productListTypeNotInput) topTitle = '미 입력 상품';
-    else topTitle = '전체 상품';
+    if(widget.type == productListTypeInput){
+      topTitle = '입력 상품';
+      topBarColor = Colors.blue;
+    } else if(widget.type == productListTypeNotInput){
+      topTitle = '미 입력 상품';
+      topBarColor = Colors.red;
+    } else{
+      topTitle = '전체 상품';
+      topBarColor = quickBlue69;
+    }
 
     getList();
   }
@@ -96,7 +104,7 @@ class ProductListState extends State<ProductList>{
           children: [
             TopRefreshBar(
               title: topTitle,
-              background: quickBlue69,
+              background: topBarColor,
               textColor: Colors.white,
               onRefresh: (){
                 refreshController.requestRefresh(duration: const Duration(milliseconds: 100));
