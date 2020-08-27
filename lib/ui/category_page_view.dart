@@ -1,4 +1,4 @@
-import 'package:barcode_mj/category_list.dart';
+import 'package:barcode_mj/ui/category_list.dart';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:flutter/cupertino.dart';
 import 'category_page.dart';

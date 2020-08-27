@@ -1,5 +1,5 @@
 import 'package:barcode_mj/custom_ui/layout.dart';
-import 'package:barcode_mj/product_view.dart';
+import 'package:barcode_mj/ui/product_view.dart';
 import 'package:barcode_mj/provider/product_provider.dart';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:barcode_mj/util/util.dart';
@@ -8,8 +8,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import 'bloc/product_bloc.dart';
-import 'custom_ui/alert_dialog.dart';
+import '../bloc/product_bloc.dart';
+import '../custom_ui/alert_dialog.dart';
 
 class CategoryPage extends StatefulWidget{
   CategoryPage({

@@ -1,4 +1,4 @@
-import 'package:barcode_mj/product_list.dart';
+import 'package:barcode_mj/ui/product_list.dart';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:flutter/cupertino.dart';
 

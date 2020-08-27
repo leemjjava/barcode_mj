@@ -1,13 +1,13 @@
 import 'dart:async';
 
-import 'package:barcode_mj/product_view.dart';
+import 'package:barcode_mj/ui/product_view.dart';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:barcode_mj/util/util.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'custom_ui/alert_dialog.dart';
-import 'custom_ui/layout.dart';
+import '../custom_ui/alert_dialog.dart';
+import '../custom_ui/layout.dart';
 
 class SearchList extends StatefulWidget{
   @override

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:barcode_mj/bloc/product_bloc.dart';
-import 'package:barcode_mj/product_view.dart';
+import 'package:barcode_mj/ui/product_view.dart';
 import 'package:barcode_mj/provider/product_provider.dart';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:barcode_mj/util/util.dart';
@@ -12,10 +12,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import 'custom_ui/alert_dialog.dart';
-import 'custom_ui/button.dart';
-import 'custom_ui/layout.dart';
-import 'custom_ui/text_field.dart';
+import '../custom_ui/alert_dialog.dart';
+import '../custom_ui/button.dart';
+import '../custom_ui/layout.dart';
+import '../custom_ui/text_field.dart';
 
 // ignore: must_be_immutable
 class ProductList extends StatefulWidget{

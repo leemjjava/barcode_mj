@@ -4,9 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'custom_ui/button.dart';
-import 'custom_ui/layout.dart';
-import 'custom_ui/text_field.dart';
+import '../custom_ui/button.dart';
+import '../custom_ui/layout.dart';
+import '../custom_ui/text_field.dart';
 
 class ProductView extends StatefulWidget{
   ProductView({

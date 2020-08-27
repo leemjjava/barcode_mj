@@ -1,5 +1,5 @@
 import 'package:barcode_mj/db/db_helper.dart';
-import 'package:barcode_mj/home.dart';
+import 'package:barcode_mj/ui/home.dart';
 import 'package:barcode_mj/provider/local_product_provider.dart';
 import 'package:barcode_mj/provider/product_provider.dart';
 import 'package:barcode_mj/util/resource.dart';

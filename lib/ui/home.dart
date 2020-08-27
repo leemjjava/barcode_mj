@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'package:barcode_mj/bloc/assets_csv_bloc.dart';
 import 'package:barcode_mj/bloc/product_bloc.dart';
-import 'package:barcode_mj/category_page_view.dart';
+import 'package:barcode_mj/ui/category_page_view.dart';
 import 'package:barcode_mj/db/db_helper.dart';
-import 'package:barcode_mj/product_page_view.dart';
+import 'package:barcode_mj/ui/product_page_view.dart';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:barcode_mj/util/util.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -16,8 +16,8 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'custom_ui/button.dart';
-import 'custom_ui/text_field.dart';
+import '../custom_ui/button.dart';
+import '../custom_ui/text_field.dart';
 
 Future<String> getLongCsv(List<List<dynamic>> rows){
   return Future((){
