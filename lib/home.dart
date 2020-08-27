@@ -1,11 +1,9 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:barcode_mj/bloc/assets_csv_bloc.dart';
 import 'package:barcode_mj/bloc/product_bloc.dart';
 import 'package:barcode_mj/category_page_view.dart';
 import 'package:barcode_mj/db/db_helper.dart';
 import 'package:barcode_mj/product_page_view.dart';
-import 'package:barcode_mj/search_list.dart';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:barcode_mj/util/util.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

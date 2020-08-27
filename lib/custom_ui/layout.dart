@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:barcode_mj/bloc/assets_csv_bloc.dart';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:barcode_mj/util/util.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -581,6 +582,246 @@ class CategoryCard extends StatelessWidget{
   Widget descriptionWidget(String content, double size){
     return Text(
       content,
+      overflow: TextOverflow.clip,
+      style: TextStyle(
+        fontSize: size,
+        color: quickBlack03,
+      ),
+    );
+  }
+
+}
+
+// ignore: must_be_immutable
+class LocalCategoryCard extends StatelessWidget{
+  LocalCategoryCard({
+    Key key,
+    @required this.map,
+    @required this.onTap,
+    @required this.updateCategory,
+  }) : super(key:key);
+
+  UpdateCategory updateCategory;
+  Map<String, dynamic> map;
+  GestureTapCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    int ts = map[icDate];
+    String dt = intTimestampToStrDateTime(ts);
+
+    return Card(
+      margin: EdgeInsets.all(10),
+      elevation: 2,
+      color: Colors.white,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              titleText(map[icName]),
+              descriptionWidget(map[icBarcode], 17),
+              SizedBox(height: 10,),
+              buttonLayout(1),
+              SizedBox(height: 10,),
+              buttonLayout(2),
+              SizedBox(height: 10,),
+              buttonLayout(3),
+              SizedBox(height: 10,),
+              buttonLayout(4),
+              SizedBox(height: 10,),
+              buttonLayout(5),
+              SizedBox(height: 10,),
+              buttonLayout(6),
+              SizedBox(height: 10,),
+              Text(dt,
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buttonLayout(int index){
+    int listCount = (index * 3) - 3;
+    int maxCount = categoryList.length;
+
+    String title01 = listCount < maxCount ? categoryList[listCount]: null;
+    ++listCount;
+    String title02 = listCount < maxCount ? categoryList[listCount]: null;
+    ++listCount;
+    String title03 = listCount < maxCount ? categoryList[listCount]: null;
+
+    return Row(
+      children: <Widget>[
+        title01 != null ? categoryBtn(title01): Expanded(child: Container(),),
+        title02 != null ? categoryBtn(title02): Expanded(child: Container(),),
+        title03 != null ? categoryBtn(title03): Expanded(child: Container(),),
+      ],
+    );
+  }
+
+  Widget categoryBtn(String title){
+    return Expanded(
+      child: BorderBtnCS(
+        title: title ?? '',
+        height: 30,
+        fontWeight: FontWeight.w800,
+        onPressed: ()=>updateCategory(title),
+      ),
+    );
+  }
+
+  Widget titleText(String name){
+    return Container(
+      alignment: Alignment.centerLeft,
+      height: 50,
+      child: Text('$name',
+        overflow: TextOverflow.clip,
+        style: TextStyle(
+          color: Colors.blueGrey,
+          fontSize: 17,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget descriptionWidget(String content, double size){
+    return Text(
+      content,
+      overflow: TextOverflow.clip,
+      style: TextStyle(
+        fontSize: size,
+        color: quickBlack03,
+      ),
+    );
+  }
+}
+
+// ignore: must_be_immutable
+class LocalPriceCard extends StatelessWidget{
+  LocalPriceCard({
+    Key key,
+    @required this.map,
+    @required this.onTap,
+    @required this.onLongPress,
+    this.onCheckTap,
+    this.onCheckLongPress,
+  }) : super(key:key);
+
+  Map<String, dynamic> map;
+  GestureTapCallback onTap;
+  GestureTapCallback onCheckTap;
+  GestureTapCallback onCheckLongPress;
+  GestureLongPressCallback onLongPress;
+
+  @override
+  Widget build(BuildContext context) {
+    int ts = map[icDate];
+    String dt = intTimestampToStrDateTime(ts);
+    Color background = inputGreenEB;
+    Icon checkIcon = Icon(Icons.refresh, color: Colors.red,);
+
+    return Card(
+      margin: EdgeInsets.all(10),
+      elevation: 2,
+      color: background,
+      child: InkWell(
+        onTap: onTap,
+        onLongPress: onLongPress,
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              titleText(map[icName]),
+              SizedBox(height: 20,),
+              Row(
+                children: [
+                  Expanded(
+                    child: contentColumn(map[icPrice], map[icBarcode]),
+                  ),
+                  onCheckTap == null ? Container() :
+                  InkWellCS(
+                    backgroundColor: Colors.transparent,
+                    child: SizedBox(
+                      width: 50,
+                      height: 50,
+                      child: checkIcon,
+                    ),
+                    onTap: onCheckTap,
+                    onLongPress: onCheckLongPress,
+                  ),
+                ],
+              ),
+              SizedBox(height: 10,),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    alignment: Alignment.centerLeft,
+                    child: Text(dt,
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 50,
+                    child: countColumn(map[icCount]),
+                  )
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget contentColumn(String price, String barcode){
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        descriptionWidget('가격', 15),
+        descriptionWidget(price ??'', 25),
+        descriptionWidget('바코드', 15),
+        descriptionWidget(barcode ??'', 25),
+      ],
+    );
+  }
+
+  Widget countColumn(String count){
+    return Column(
+      children: [
+        descriptionWidget('재고', 15),
+        descriptionWidget(count ??'입력없음', 15),
+      ],
+    );
+  }
+
+  Widget titleText(String name){
+    return Container(
+      alignment: Alignment.centerLeft,
+      child: Text('$name',
+        overflow: TextOverflow.clip,
+        style: TextStyle(
+          color: Colors.blueGrey,
+          fontSize: 17,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget descriptionWidget(String content, double size){
+    return Text(
+      '$content',
       overflow: TextOverflow.clip,
       style: TextStyle(
         fontSize: size,

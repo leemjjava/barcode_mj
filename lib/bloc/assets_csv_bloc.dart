@@ -8,6 +8,8 @@ const icBarcode = 'barcode';
 const icPrice = 'price';
 const icTexType = 'texType';
 const icBayPrice = 'bay_price';
+const icCount = 'count';
+const icDate = 'date';
 
 class AssetsCsvBloc{
   Future<String> loadAsset(String path) async {
@@ -15,7 +17,7 @@ class AssetsCsvBloc{
   }
 
   Future<void> loadCSV() async{
-    String data = await loadAsset('assets/sale_csv_final.csv');
+    String data = await loadAsset('assets/sale_csv_counting.csv');
 
     String csvStr = data;
     final itemList = csvStr.split('\n');
@@ -31,6 +33,7 @@ class AssetsCsvBloc{
         icPrice : columns[4],
         icBayPrice: columns[5],
         icTexType: columns[6],
+        icCount: columns[7],
       };
 
       productList.add(product);
@@ -39,7 +42,5 @@ class AssetsCsvBloc{
     print('count : ${productList.length}');
     int insertCount = await DBHelper().insertProductAll(productList);
     print('insert Count : $insertCount');
-    final documents = await DBHelper().selectAllProduct();
-    print('documents.length : ${documents.length}');
   }
 }

@@ -1,5 +1,6 @@
 import 'package:barcode_mj/db/db_helper.dart';
 import 'package:barcode_mj/home.dart';
+import 'package:barcode_mj/provider/local_product_provider.dart';
 import 'package:barcode_mj/provider/product_provider.dart';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:barcode_mj/util/util.dart';
@@ -14,6 +15,7 @@ void main() {
       MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => ProductProvider()),
+          ChangeNotifierProvider(create: (_) => LocalProductProvider()),
         ],
         child: MyApp(),
       )
@@ -49,10 +51,9 @@ class _MyAppState extends State<MyApp> {
 
   initDb()async{
     try{
-      final db = DBHelper();
-      final products = await db.selectAllProduct();
+      final productCount = await DBHelper().selectProductCount();
+      if(productCount <= 0) await AssetsCsvBloc().loadCSV();
 
-      if(products.isEmpty) await AssetsCsvBloc().loadCSV();
       setComplete();
     }catch(error, stacktrace) {
       print("$error");

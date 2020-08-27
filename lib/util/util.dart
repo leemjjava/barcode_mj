@@ -345,6 +345,17 @@ String timestampToStrDateTime(Timestamp ts) {
       .toString();
 }
 
+String intTimestampToStrDateTime(int ts) {
+  try{
+    return DateTime
+        .fromMillisecondsSinceEpoch(ts)
+        .toString();
+  }catch(error){
+    return '';
+  }
+}
+
+
 Widget alertText(String title, double size){
   return Text(title,
     style: TextStyle(
