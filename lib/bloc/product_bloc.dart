@@ -65,6 +65,8 @@ class ProductBloc{
     return snapshot.docs;
   }
 
+
+
   Future<List<DocumentSnapshot>> getSearch(String keyword) async{
     QuerySnapshot snapshot = await _firestore
         .collection(colName)
@@ -74,5 +76,24 @@ class ProductBloc{
         .get();
 
     return snapshot.docs;
+  }
+
+  Future<void> updateIsInputAll(List<DocumentSnapshot> documents) async{
+    var batch = _firestore.batch();
+    int count = 0;
+    for (final doc in documents) {
+      batch.update(
+        _firestore.collection(colName).doc(doc.id),
+        {fnIsInput: 'Y'},
+      );
+
+      ++count;
+      if (count % 100 == 0) {
+        await batch.commit();
+        batch = _firestore.batch();
+      }
+    }
+
+    await batch.commit();
   }
 }

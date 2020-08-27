@@ -149,7 +149,7 @@ class DBHelper {
     int timeStamp = DateTime.now().millisecondsSinceEpoch;
 
     List<dynamic> arguments = [
-      '미분류', '', name, barcode, price, '포함', '', count,timeStamp
+      '미분류', '', name, barcode, price, '포함', '', count, timeStamp
     ];
 
     if(transaction != null) return transaction.rawInsert(sql,arguments);
@@ -201,6 +201,28 @@ class DBHelper {
     return res;
   }
 
+  Future<List<Map>> selectByNameKeyword(String keyword) async{
+    final db = await database;
+    List<Map> res = await db.query(
+        productTable,
+        columns: [
+          icCategory01,
+          icCategory02,
+          icName,
+          icBarcode,
+          icPrice,
+          icTexType,
+          icBayPrice,
+          icCount,
+          icDate
+        ],
+        where: '$icName LIKE ?',
+        whereArgs: ['%$keyword%'],
+        orderBy: '$icDate DESC'
+    );
+
+    return res;
+  }
 
   Future<int> updateCategory(Map<String, dynamic> item, String category) async{
     final db = await database;

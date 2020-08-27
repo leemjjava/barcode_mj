@@ -4,6 +4,7 @@ import 'package:barcode_mj/bloc/product_bloc.dart';
 import 'package:barcode_mj/ui/category_page_view.dart';
 import 'package:barcode_mj/db/db_helper.dart';
 import 'package:barcode_mj/ui/product_page_view.dart';
+import 'package:barcode_mj/ui/search_list.dart';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:barcode_mj/util/util.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -49,7 +50,6 @@ class HomeState extends State<Home>{
     prefs = await SharedPreferences.getInstance();
   }
 
-
   @override
   void dispose() {
     _fileNameCon.dispose();
@@ -80,13 +80,6 @@ class HomeState extends State<Home>{
                 ),
                 SizedBox(height: 25,),
                 serviceItem(
-                  icon: Icon(Icons.list, size: 40,),
-                  title: "전체 상품",
-                  content: "입력/미입력 전체 리스트",
-                  onTap: ()=>serviceItemOnTap(productListTypeAll),
-                ),
-                SizedBox(height: 10,),
-                serviceItem(
                   icon: Icon(Icons.assignment_late, size: 40, color: Colors.red,),
                   title: "미입력 상품",
                   content: "포스기에 미등록된 상품 리스트",
@@ -108,16 +101,16 @@ class HomeState extends State<Home>{
                 ),
                 SizedBox(height: 10,),
                 serviceItem(
-                  icon: Icon(Icons.data_usage, size: 40, color: Colors.orange),
-                  title: "로컬 엑셀 파일 전송",
-                  content: "로컬 엑셀 파일 전송",
-                  onTap: ()=>showFileDialog(isLocal: true),
+                  icon: Icon(Icons.search, size: 40, color: Colors.orange),
+                  title: "포스기 상품 검색",
+                  content: "포스기에 등록되어 있는 상품을 검색합니다.",
+                  onTap: ()=>searchOnTap(),
                 ),
                 SizedBox(height: 10,),
                 serviceItem(
                   icon: Icon(Icons.email, size: 40, color: Colors.green),
                   title: "엑셀 파일 전송",
-                  content: "현재 서버 데이터를 CSV 파일로 변환하여 메일로 전송합니다.",
+                  content: "현재 서버 데이터와 포스기 등록 데이터를 중복 제거하여 메일로 전송합니다.",
                   onTap: ()=>showFileDialog(),
                 ),
                 SizedBox(height: 10,),
@@ -136,6 +129,11 @@ class HomeState extends State<Home>{
 
   void categoryOnTap(){
     Route route = createSlideUpRoute(widget : CategoryPageView());
+    Navigator.push(context, route);
+  }
+
+  void searchOnTap(){
+    Route route = createSlideUpRoute(widget : SearchList());
     Navigator.push(context, route);
   }
 
@@ -243,14 +241,9 @@ class HomeState extends State<Home>{
 
                           fileName = '${_fileNameCon.text}_$formattedDate';
 
-                          if(isLocal == true){
-                            _progressDialog = getProgressDialog(context, 'Local DB CSV 파일로 만드는 중...');
-                            _progressDialog.show();
-                            getLocalCsv();
-                          } else{
-                            getCsv();
-                            Navigator.pop(context);
-                          }
+                          _progressDialog = getProgressDialog(context, 'Local DB CSV 파일로 만드는 중...');
+                          _progressDialog.show();
+                          getLocalCsv();
                         }),
                       ],
                     ),
@@ -304,45 +297,34 @@ class HomeState extends State<Home>{
     return File('$path/barcode_mj/$fileName.csv').create();
   }
 
-  getCsv() async {
-    final documents = await ProductBloc().getCsvProduct();
+  Future<bool> addServerData() async {
+    final bloc = ProductBloc();
+
+    final documents = await bloc.getCsvProduct();
     if (documents == null || documents.isEmpty){
       showReadDocSnackBar("상품이 없습니다.");
-      return;
+      return false;
     }
 
-    final notInputDocs = documents.where((item){
-      return item.data()[fnIsInput] != 'Y';
-    }).toList();
+    List<Map<String, dynamic>> documentList = [];
 
-    if (notInputDocs.isEmpty){
-      showReadDocSnackBar("입력할 상품이 없습니다.");
-      return;
+    for (final document in documents) {
+      documentList.add(document.data());
     }
 
+    await DBHelper().insertServerProductAll(documentList);
+    await bloc.updateIsInputAll(documents);
 
-    List<List<dynamic>> rows = [];
-    rows.add(["바코드", "상품명", "가격", "재고",]);
-
-    for (final document in notInputDocs) {
-      List<dynamic> row = [];
-
-      row.add(document.data()[fnBarcode]);
-      row.add(document.data()[fnName]);
-      row.add(document.data()[fnPrice]);
-      row.add(document.data()[fnCount]);
-
-      rows.add(row);
-    }
-
-    File file = await _localFile;
-    String csv = const ListToCsvConverter().convert(rows);
-    file.writeAsString(csv);
-
-    sendMailAndAttachment();
+    return true;
   }
 
   getLocalCsv() async {
+    final isOk = await addServerData();
+    if(isOk == false){
+      _progressDialog.dismiss();
+      return;
+    }
+
     final documents = await DBHelper().selectAllProduct();
     print('documents count: ${documents.length}');
     if (documents == null || documents.isEmpty){
@@ -351,7 +333,7 @@ class HomeState extends State<Home>{
     }
 
     List<List<dynamic>> rows = [];
-    rows.add(["대분류명", "중분류명", "상품명", "바코드","판매금액","부가세타입","매입금액"]);
+    rows.add(["대분류명", "중분류명", "상품명", "바코드", "판매금액", "부가세타입", "매입금액", "재고"]);
 
     for (final document in documents) {
       List<dynamic> row = [];
@@ -363,6 +345,7 @@ class HomeState extends State<Home>{
       row.add(document[icPrice]);
       row.add(document[icTexType]);
       row.add(document[icBayPrice]);
+      row.add(document[icCount]);
 
       rows.add(row);
     }
@@ -376,13 +359,6 @@ class HomeState extends State<Home>{
     sendMailAndAttachment();
     _progressDialog.dismiss();
     Navigator.pop(context);
-  }
-
-  Future<QuerySnapshot> getAllProduct() {
-    return FirebaseFirestore.instance
-        .collection(colName)
-        .orderBy(fnDatetime, descending: true)
-        .get();
   }
 
   void showReadDocSnackBar(String title) {
