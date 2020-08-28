@@ -192,7 +192,9 @@ class ProductListState extends State<ProductList>{
 
   Widget getFloatingBtn(){
     if(widget.type == productListTypeInput) return Container();
+
     return FloatingActionButton(
+      heroTag: widget.type,
       onPressed: barcodeScanning,
       child: Icon(Icons.camera_alt),
       backgroundColor: Colors.blue,
