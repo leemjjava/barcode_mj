@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:barcode_mj/db/db_helper.dart';
+import 'package:barcode_mj/ui/local_product_view.dart';
 import 'package:barcode_mj/ui/product_view.dart';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:barcode_mj/util/util.dart';
@@ -98,8 +99,15 @@ class SearchListState extends State<SearchList>{
 
           return LocalPriceCard(
             map: product,
+            onTap:()=>showLocalProductView(product),
           );
         }
     );
+  }
+
+  void showLocalProductView(Map product){
+    FocusScope.of(context).requestFocus(new FocusNode());
+    Route route = createSlideUpRoute(widget : LocalProductView(product: product));
+    Navigator.push(context, route);
   }
 }

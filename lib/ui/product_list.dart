@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:barcode_mj/bloc/product_bloc.dart';
+import 'package:barcode_mj/db/db_helper.dart';
 import 'package:barcode_mj/ui/product_view.dart';
 import 'package:barcode_mj/provider/product_provider.dart';
 import 'package:barcode_mj/util/resource.dart';
@@ -39,7 +40,6 @@ class ProductListState extends State<ProductList>{
 
   FirebaseFirestore firestore;
   List<DocumentSnapshot> _documents;
-  ProgressDialog _progressDialog;
   @override
   void initState() {
     super.initState();
@@ -221,8 +221,33 @@ class ProductListState extends State<ProductList>{
     firestore.collection(colName).where(fnBarcode, isEqualTo: barcode).get().then((value){
       List<DocumentSnapshot> checkDocuments = value.docs;
 
-      if(checkDocuments.isEmpty) showCreateDocDialog();
+      if(checkDocuments.isEmpty) checkLocalBarcode();
       else showProductView(checkDocuments[0].id);
+
+    }, onError: (error, stacktrace){
+      print("onError: $error");
+      print(stacktrace.toString());
+      showAlert(context,stacktrace.toString());
+    });
+  }
+
+  void checkLocalBarcode(){
+    DBHelper().selectByBarcode(barcode.trim()).then((List<Map> products){
+      if(products.isEmpty) return showCreateDocDialog();
+      final product = products[0];
+
+      showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (context) {
+          return ProductInsertDialog(
+            barcode: barcode,
+            showReadDocSnackBar:showReadDocSnackBar,
+            refreshList:refreshList,
+            localData: product,
+          );
+        },
+      );
 
     }, onError: (error, stacktrace){
       print("onError: $error");

@@ -1,3 +1,4 @@
+import 'package:barcode_mj/bloc/csv_bloc.dart';
 import 'package:barcode_mj/custom_ui/text_field.dart';
 import 'package:barcode_mj/util/resource.dart';
 import 'package:barcode_mj/util/util.dart';
@@ -15,12 +16,14 @@ class ProductInsertDialog extends StatefulWidget{
     Key key,
     this.barcode,
     this.showReadDocSnackBar,
-    this.refreshList
+    this.refreshList,
+    this.localData,
   }):super(key:key);
 
   final String barcode;
   final ShowReadDocSnackBar showReadDocSnackBar;
   final VoidCallback refreshList;
+  Map localData;
 
   @override
   ProductInsertDialogState createState()=>ProductInsertDialogState();
@@ -30,23 +33,37 @@ class ProductInsertDialog extends StatefulWidget{
 class ProductInsertDialogState extends State<ProductInsertDialog>{
   TextEditingController _nameCon = TextEditingController();
   TextEditingController _priceCon = TextEditingController();
-  TextEditingController _barcodeCon = TextEditingController();
   TextEditingController _countCon = TextEditingController();
   double inputHeight = 40, inputFontSize = 15;
 
   String category = inputCategoryList[0];
 
   @override
+  void initState() {
+    super.initState();
+    if(widget.localData != null) setLocalData();
+  }
+
+  setLocalData(){
+    final product = widget.localData;
+
+    _nameCon.text = product[icName];
+    _priceCon.text = product[icPrice];
+    _countCon.text = product[icName];
+  }
+
+  @override
   void dispose() {
     _nameCon.dispose();
     _priceCon.dispose();
-    _barcodeCon.dispose();
     _countCon.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLocal = widget.localData != null;
+
     return AlertDialog(
         contentPadding: EdgeInsets.only(left: 15, right: 15, top: 15, bottom: 5),
         content: Container(
@@ -54,7 +71,7 @@ class ProductInsertDialogState extends State<ProductInsertDialog>{
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  alertText('상품등록', 20),
+                  isLocal ? localDataText() : alertText('상품등록', 20),
                   SizedBox(height: 20,),
                   Container(
                     alignment: Alignment.center,
@@ -95,6 +112,21 @@ class ProductInsertDialogState extends State<ProductInsertDialog>{
               ),
             )
         )
+    );
+  }
+
+  Widget localDataText(){
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.only(top: 5, bottom: 5),
+      color: Colors.orange,
+      alignment: Alignment.center,
+      child: Text('포스기에 등록된 데이터',
+        style: TextStyle(
+            color: Colors.white,
+            fontSize: 20
+        ),
+      ),
     );
   }
 
@@ -186,24 +218,10 @@ class ProductInsertDialogState extends State<ProductInsertDialog>{
     );
   }
 
-  Widget getBarcodeTf(){
-    return UnderLineTfCS(
-      controller: _barcodeCon,
-      textColor: quickBlack00,
-      underLineColor: quickBlack0d,
-      cursorColor: quickBlack0d,
-      hint: '바코드',
-      height: inputHeight,
-      width: 1.0,
-      fontSize: inputFontSize,
-    );
-  }
-
   textControllerClear(){
     category = inputCategoryList[0];
     _nameCon.clear();
     _priceCon.clear();
-    _barcodeCon.clear();
     _countCon.clear();
   }
 }

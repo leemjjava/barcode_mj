@@ -31,6 +31,7 @@ class LocalProductViewState extends State<LocalProductView>{
   TextEditingController _priceCon = TextEditingController();
   TextEditingController _barcodeCon = TextEditingController();
   TextEditingController _countCon = TextEditingController();
+  TextEditingController _categoryCon = TextEditingController();
 
   @override
   void initState() {
@@ -47,8 +48,18 @@ class LocalProductViewState extends State<LocalProductView>{
     _priceCon.text = product[icPrice];
     _barcodeCon.text = product[icBarcode];
     _countCon.text = product[icCount] ?? '입력 없음';
-    category = product[icCategory01] ?? inputCategoryList[0];
+    _categoryCon.text = product[icCategory01] ?? inputCategoryList[0];
     setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _nameCon.dispose();
+    _priceCon.dispose();
+    _barcodeCon.dispose();
+    _countCon.dispose();
+    _categoryCon.dispose();
+    super.dispose();
   }
 
   @override
@@ -84,16 +95,7 @@ class LocalProductViewState extends State<LocalProductView>{
                             SizedBox(height: 20,),
                             inputBox(getCountTf(), "재고"),
                             SizedBox(height: 10,),
-                            noticeText('카테고리 분류'),
-                            DropDownBtnCS(
-                              value: category,
-                              hint: "분류",
-                              itemList: inputCategoryList,
-                              onChanged: (value){
-                                category = value;
-                                setState(() {});
-                              },
-                            ),
+                            inputBox(getCategoryTf(), "카테고리"),
                             SizedBox(height: 20,),
                             SizedBox(height: 60,),
                           ]
@@ -128,6 +130,20 @@ class LocalProductViewState extends State<LocalProductView>{
           fontSize: 12,
         ),
       ),
+    );
+  }
+
+  Widget getCategoryTf(){
+    return UnderLineTfCS(
+      controller: _categoryCon,
+      textColor: quickBlack00,
+      underLineColor: quickBlack0d,
+      cursorColor: quickBlack0d,
+      hint: '수량',
+      height: inputHeight,
+      width: 1.0,
+      fontSize: inputFontSize,
+      isOnlyDigits: true,
     );
   }
 

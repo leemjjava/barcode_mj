@@ -87,7 +87,7 @@ class ProductBloc{
     QuerySnapshot snapshot = await _firestore
         .collection(colName)
         .where(fnIsInput, isEqualTo: 'N')
-        .orderBy(fnDatetime, descending: true)
+        .orderBy(fnDatetime, descending: false)
         .get();
 
     return snapshot.docs;

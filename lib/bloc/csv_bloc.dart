@@ -27,14 +27,14 @@ class CsvBloc{
       final columns = item.split(',');
 
       final product = {
-        icCategory01: columns[0],
-        icCategory02: columns[1],
-        icBarcode : columns[2],
-        icName: columns[3],
-        icPrice : columns[4],
-        icBayPrice: columns[5],
-        icTexType: columns[6],
-        icCount: columns[7],
+        icCategory01: columns[0].trim(),
+        icCategory02: columns[1].trim(),
+        icBarcode : columns[2].trim(),
+        icName: columns[3].trim(),
+        icPrice : columns[4].trim(),
+        icBayPrice: columns[5].trim(),
+        icTexType: columns[6].trim(),
+        icCount: columns[7].trim(),
       };
 
       productList.add(product);
